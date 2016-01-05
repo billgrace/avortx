@@ -6,19 +6,20 @@ if(Input::exists()) {
 
 		$validate = new Validate();
 		$validation = $validate->check($_POST, array(
-			'username' => array('required' => true),
+			'login_name' => array('required' => true),
 			'password' => array('required' => true)
 		));
 
 		if($validation->passed()) {
 			$user = new User();
 			$remember = (Input::get('remember') === 'on') ? true : false;
-			$login = $user->login(Input::get('username'), Input::get('password'), $remember);
+			$login = $user->login(Input::get('login_name'), Input::get('password'), $remember);
 
 			if($login) {
 				Redirect::to('index.php');
 			} else {
 				echo '<p>Sorry, logging in failed.</p>';
+				echo '<p>user: ' . Input::get('login_name') . ', password entered: ' . Input::get('password') . '</p>';
 			}
 		} else {
 			foreach ($validation->errors() as $error) {
@@ -31,8 +32,8 @@ if(Input::exists()) {
 
 <form action="" method="post">
 	<div class="field">
-		<label for="username">Username</label>
-		<input type="text" name="username" id="username" autocomplete="off">
+		<label for="login_name">Login name</label>
+		<input type="text" name="login_name" id="login_name" autocomplete="off">
 	</div>
 
 	<div class="field">

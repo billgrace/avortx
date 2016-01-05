@@ -42,6 +42,11 @@ class Validate {
 								$this->addError("{$item} already exists.");
 							}
 							break;
+						case 'valid_email':
+							if(!filter_var($value, FILTER_VALIDATE_EMAIL)) {
+								$this->addError("{$value} is not a valid email address.");
+							}
+							break;
 						default:
 							# code...
 							break;

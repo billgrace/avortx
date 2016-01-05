@@ -64,13 +64,65 @@ class DB {
 		return $this->action('SELECT *', $table, $where);
 	}
 
+	public function getSorted($table, $where = array(), $sort_column_name) {
+		if(count($where) === 3) {
+			$operators = array('=', '>', '<', '>=', '<=');
+
+			$field		= $where[ 0 ];
+			$operator	= $where[ 1 ];
+			$value		= $where[ 2 ];
+
+			if( in_array($operator, $operators)) {
+				$sql = "SELECT * FROM {$table} WHERE {$field} {$operator} ? ORDER BY {$sort_column_name}";
+				if(!$this->query($sql, array($value))->error()) {
+					return $this; 
+				}
+			}
+		}
+		return false;
+	}
+
+	public function get_columns($columns = array(), $table) {
+		$sql = 'SELECT ';
+		$x = 1;
+		foreach ($columns as $column) {
+			$sql .= $column;
+			if($x < count($columns)) {
+				$sql .= ', ';
+			}
+			$x++;
+		}
+		$sql .= ' FROM ' . $table;
+		if(!$this->query($sql)->error()) {
+			return $this;
+		}
+		return false;
+	}
+
+	public function get_distinct_columns($columns = array(), $table) {
+		$sql = 'SELECT DISTINCT ';
+		$x = 1;
+		foreach ($columns as $column) {
+			$sql .= $column;
+			if($x < count($columns)) {
+				$sql .= ', ';
+			}
+			$x++;
+		}
+		$sql .= ' FROM ' . $table;
+		if(!$this->query($sql)->error()) {
+			return $this;
+		}
+		return false;
+	}
+
 	public function delete($table, $where) {
 		return $this->action('DELETE', $table, $where);
 	}
 
 	public function insert($table, $fields = array()) {
 		$keys = array_keys($fields);
-		$values = '';
+		$values = ' ';
 		$x = 1;
 
 		foreach ($fields as $field) {
@@ -88,7 +140,7 @@ class DB {
 		return false;
 	}
 
-	public function update($table, $id, $fields) {
+	public function update($table, $db_id, $fields) {
 		$set = '';
 		$x = 1;
 
@@ -100,7 +152,7 @@ class DB {
 			$x++;
 		}
 
-		$sql = "UPDATE {$table} SET {$set} WHERE id = {$id}";
+		$sql = "UPDATE {$table} SET {$set} WHERE db_id = {$db_id}";
 
 		if(!$this->query($sql, $fields)->error()) {
 			return true;
@@ -122,6 +174,14 @@ class DB {
 
 	public function count() {
 		return $this->_count;
+	}
+
+	public function logDiagnosticEvent( $words, $numb ) {
+		$this->insert('diagnostic_messages', array(
+			'time' => date('Y-m-d H:i:s'),
+			'message' => $words,
+			'number' => $numb
+		));
 	}
 
 }

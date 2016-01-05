@@ -12,7 +12,7 @@ if(!$username = Input::get('user')) {
 	}
 	?>
 
-	<h3><?php echo escape($data->username); ?></h3>
-	<p>Full name: <?php echo escape($data->name); ?></p>
+	<h3><?php echo escape($data->login_name); ?></h3>
+	<p>Full name: <?php echo escape($data->full_name); ?></p>
 	<?php
 }

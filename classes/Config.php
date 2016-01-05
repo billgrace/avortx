@@ -14,3 +14,4 @@ class Config {
 		return false;
 	}
 }
+

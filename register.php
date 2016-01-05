@@ -5,23 +5,27 @@ if(Input::exists()) {
 	if(Token::check(Input::get('token'))) {
 		$validate = new Validate();
 		$validation = $validate->check($_POST, array(
-			'username' => array(
+			'login_name' => array(
 				'required' => true,
 				'numeric' => false,
 				'min' => 2,
 				'max' => 20,
-				'unique' => 'users'
-			),
+				'unique' => 'users'),
 			'password' => array(
 				'required' => true,
 				'min' => 6),
 			'password_again' => array(
 				'required' => true,
 				'matches' => 'password'),
-			'name' => array(
+			'full_name' => array(
 				'required' => true,
 				'min' => 2,
-				'max' => 50)
+				'max' => 50),
+			'email_address' => array(
+				'valid_email' => true,
+				'numeric' => false,
+				'max' => 255,
+				'unique' => 'users')
 		));
 
 		if($validation->passed()) {
@@ -31,12 +35,13 @@ if(Input::exists()) {
 
 			try {
 				$user->create(array(
-					'username' => Input::get('username'),
+					'login_name' => Input::get('login_name'),
 					'password' => Hash::make(Input::get('password'), $salt),
 					'salt' => $salt,
-					'name' => Input::get('name'),
-					'joined' => date('Y-m-d H:i:s'),
-					'usergroup' => 1
+					'full_name' => Input::get('full_name'),
+					'register_date' => date('Y-m-d H:i:s'),
+					'email_address' => Input::get('email_address'),
+					'user_group' => 1
 				));
 
 				Session::flash('home', 'You have been registered and can now log in!');
@@ -56,8 +61,8 @@ if(Input::exists()) {
 
 <form action="" method="post">
 	<div class="field">
-		<label for="username">Username</label>
-		<input type="text" name="username" id="username" value="<?php echo  escape(Input::get('username')); ?>" autocomplete="off">
+		<label for="login_name">Login name</label>
+		<input type="text" name="login_name" id="login_name" value="<?php echo  escape(Input::get('login_name')); ?>" autocomplete="off">
 	</div>
 
 	<div class="field">
@@ -71,8 +76,14 @@ if(Input::exists()) {
 	</div>
 
 	<div class="field">
-		<label for="name">Your name</label>
-		<input type="text" name="name" value="<?php echo escape(Input::get('name')); ?>" id="name">
+		<label for="full_name">Your full name</label>
+		<input type="text" name="full_name" value="<?php echo escape(Input::get('full_name')); ?>" id="full_name">
+	</div>
+
+	<div class="field">
+		<label for="email_address">Your email address</label>
+		<input type="text" name="email_address" value="<?php echo escape(Input::get('email_address')); ?>" id="email_address">
+		<p>(an email address is needed if you ever forget your login name or password)</p>
 	</div>
 
 	<input type="hidden" name="token" value="<?php echo Token::generate(); ?>">

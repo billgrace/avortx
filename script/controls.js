@@ -308,7 +308,9 @@ function horizontalSlider( sliderImageFileName, leftLimitPercent, verticalCenter
 }
 
 // Similar to horizontalSlider but oriented vertically
-function verticalSlider( sliderImageFileName, horizontalCenterPercent, topLimitPercent, sliderWidthPercent, trackWidthPercent, limitToLimitPercent, trackColor, bottomLimitValue, topLimitValue, startingValue, changeHandler ) {
+// - remove changeHandler callback since we're using this in a polling mode....
+// function verticalSlider( sliderImageFileName, horizontalCenterPercent, topLimitPercent, sliderWidthPercent, trackWidthPercent, limitToLimitPercent, trackColor, bottomLimitValue, topLimitValue, startingValue, changeHandler ) {
+function verticalSlider( sliderImageFileName, horizontalCenterPercent, topLimitPercent, sliderWidthPercent, trackWidthPercent, limitToLimitPercent, trackColor, bottomLimitValue, topLimitValue, startingValue ) {
 	// make a persistent variable of this instance for later reference during event handling
 	var inst = this;
 	// make a variable allowing the label to become dormant
@@ -364,7 +366,8 @@ function verticalSlider( sliderImageFileName, horizontalCenterPercent, topLimitP
 		var sliderHeight = ( sliderWidth / imageAspectRatio ) | 0;
 		// calculate the pixel location of the slider image according to present value
 		var sliderLeft = ( ( horizontalCenterPercent - ( sliderWidthPercent / 2 ) ) * windowWidth ) | 0;
-		var sliderTop = ( inst.bottomLimitPixel - ( inst.motionPixelRange * ( inst.currentValue / ( inst.topLimitValue - inst.bottomLimitValue ) ) ) - ( sliderHeight / 2 ) ) | 0;
+		// var sliderTop = ( inst.bottomLimitPixel - ( inst.motionPixelRange * ( inst.currentValue / ( inst.topLimitValue - inst.bottomLimitValue ) ) ) - ( sliderHeight / 2 ) ) | 0;
+		var sliderTop = ( inst.bottomLimitPixel - ( inst.motionPixelRange * ( ( inst.currentValue - inst.bottomLimitValue ) / ( inst.topLimitValue - inst.bottomLimitValue ) ) ) - ( sliderHeight / 2 ) ) | 0;
 		// set the calculated geometry into the control's elements
 		inst.track.style.left = "0" + trackLeft + "px";
 		inst.track.style.top = "0" + trackTop + "px";
@@ -396,11 +399,19 @@ function verticalSlider( sliderImageFileName, horizontalCenterPercent, topLimitP
 		inst.slider.style.display = "none";
 	}
 
+	this.disableOrbitControls = function() {
+		orbitControls.enabled = false;
+	}
+
+	this.enableOrbitControls = function() {
+		orbitControls.enabled = true;
+	}
+
 	// a routine to programatically set the slider to a given position
 	this.setSlider = function( givenValue ) {
 		inst.currentValue = givenValue;
 		inst.windowResizeHandler();
-		changeHandler( inst.currentValue );
+		// changeHandler( inst.currentValue );
 	}
 
 	// a routine to convert click/touch screen geometry into the equivalent slider value
@@ -409,7 +420,7 @@ function verticalSlider( sliderImageFileName, horizontalCenterPercent, topLimitP
 		if( pixelY < inst.topLimitPixel ) pixelY = inst.topLimitPixel;
 		inst.currentValue = inst.bottomLimitValue + inst.valueRange * ( inst.bottomLimitPixel - pixelY ) / inst.motionPixelRange;
 		inst.windowResizeHandler();
-		changeHandler( inst.currentValue );
+		// changeHandler( inst.currentValue );
 	}
 
 	// handlers for mouse and touch events
@@ -472,6 +483,12 @@ function verticalSlider( sliderImageFileName, horizontalCenterPercent, topLimitP
 	this.slider.addEventListener( "touchstart", this.touchStartEventHandler, false );
 	this.track.addEventListener( "touchmove", this.touchMoveEventHandler, false );
 	this.slider.addEventListener( "touchmove", this.touchMoveEventHandler, false );
+	this.slider.addEventListener( 'mouseover', function() { inst.disableOrbitControls() }, false );
+	this.slider.addEventListener( 'mouseout', function() { inst.enableOrbitControls() }, false );
+	this.slider.addEventListener( 'touchenter', function() { inst.disableOrbitControls() }, false );
+	this.slider.addEventListener( 'touchstart', function() { inst.disableOrbitControls() }, false );
+	this.slider.addEventListener( 'touchleave', function() { inst.enableOrbitControls() }, false );
+	this.slider.addEventListener( 'touchend', function() { inst.enableOrbitControls() }, false );
 	document.addEventListener( "touchend", this.touchEndEventHandler, false );
 }
 
@@ -671,6 +688,7 @@ function imageButton( imageFileName, leftPercent, topPercent, widthPercent, heig
 */
 function listBox( _itemClickedCallback ) {
 	var inst = this;
+	this.instantiatedInDocumentBody = false;
 	this.itemClickedCallback = _itemClickedCallback;
 	this.listBoxObjectList = [];
 	this.listWindowDiv = document.createElement( 'div' );
@@ -678,16 +696,20 @@ function listBox( _itemClickedCallback ) {
 	this.listWindowDiv.style.backgroundColor = "#887733";
 	this.listWindowDiv.style.cursor = 'default';
 	document.body.appendChild( this.listWindowDiv );
+	this.instantiatedInDocumentBody = true;
 	this.doneButtonDiv = document.createElement( 'div' );
 	this.doneButtonDiv.style.cssText = "position:absolute;left:0px;top:0px;width:300px;height:20px";
 	this.doneButtonDiv.style.backgroundColor = "#2277BB";
 	this.doneButtonDiv.innerHTML = 'Click here to close';
-	this.doneButtonDiv.addEventListener( 'click', function() {inst.dispose() }, false );
+	var itemObject = new Object();
+	itemObject.value = -1;
+	this.doneButtonDiv.addEventListener( 'click', function() {inst.itemClickedCallback( itemObject ) }, false );
+	this.doneButtonDiv.addEventListener( 'touchstart', function() {inst.itemClickedCallback( itemObject ) }, false );
 	this.listWindowDiv.appendChild( this.doneButtonDiv );
 	this.listPaneDiv = document.createElement( 'div' );
 	this.listPaneDiv.style.cssText = "position:absolute;left:0px;top:20px;width:300px;height:110px";
 	this.listPaneDiv.style.overflow = 'auto';
-	this.listWindowDiv.appendChild( this.listPaneDiv)
+	this.listWindowDiv.appendChild( this.listPaneDiv);
 
 	this.addItem = function( text, number ) {
 		var itemObject = new Object();
@@ -695,18 +717,39 @@ function listBox( _itemClickedCallback ) {
 		itemVisibleDiv.style.cssText = "overflow:hidden";
 		itemVisibleDiv.style.backgroundColor = "#ffff88";
 		itemVisibleDiv.innerHTML = text;
-		itemVisibleDiv.addEventListener( 'click', function() { inst.itemClickedCallback( itemObject ) }, false );
+		itemVisibleDiv.addEventListener( 'mousedown', function() { inst.itemClickedCallback( itemObject ) }, false );
+		itemVisibleDiv.addEventListener( 'touchstart', function() { inst.itemClickedCallback( itemObject ) }, false );
+		itemVisibleDiv.addEventListener( 'mouseover', function() { inst.disableOrbitControls() }, false );
+		itemVisibleDiv.addEventListener( 'mouseout', function() { inst.enableOrbitControls() }, false );
+		itemVisibleDiv.addEventListener( 'touchstart', function() { inst.disableOrbitControls() }, false );
+		itemVisibleDiv.addEventListener( 'touchenter', function() { inst.disableOrbitControls() }, false );
+		itemVisibleDiv.addEventListener( 'touchstop', function() { inst.enableOrbitControls() }, false );
+		itemVisibleDiv.addEventListener( 'touchleave', function() { inst.enableOrbitControls() }, false );
 		inst.listPaneDiv.appendChild( itemVisibleDiv );
 		itemObject.visibleDiv = itemVisibleDiv;
 		itemObject.value = number;
 		inst.listBoxObjectList.push( itemObject );
 	}
 
+	this.disableOrbitControls = function() {
+		orbitControls.enabled = false;
+	}
+
+	this.enableOrbitControls = function() {
+		orbitControls.enabled = true;
+	}
+
+	this.remove = function() {
+		inst.dispose();
+	}
 	this.dispose = function() {
-		for( var i = 0; i < this.listBoxObjectList.length; i++) {
-			inst.listBoxObjectList[ i ].visibleDiv.removeEventListener( onclick, inst.itemClickedCallback, false );
-		}
+		// for( var i = 0; i < this.listBoxObjectList.length; i++) {
+		// 	inst.listBoxObjectList[ i ].visibleDiv.removeEventListener( onclick, inst.itemClickedCallback, false );
+		// }
 		inst.listBoxObjectList = [];
-		document.body.removeChild( inst.listWindowDiv );
+		if( inst.instantiatedInDocumentBody ) {
+			document.body.removeChild( inst.listWindowDiv );
+			inst.instantiatedInDocumentBody = false;
+		}
 	}
 }

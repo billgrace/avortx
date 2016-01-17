@@ -136,10 +136,9 @@ var trackTypeAjaxFunctionSent;
 function trackTypeAjaxCallback() {
 	switch( trackTypeAjaxFunctionSent ) {
 		case 'add_track_type':
-			appendMessage( 'add_track_type returned: ' + xmlResponseString );
+			emptyGlobalListBox();
 			break;
 		case 'get_track_type':
-			appendMessage( 'get_track_type has returned.' );
 			if( xmlResponseData != undefined ) {
 				currentTrackType = xmlResponseData[ 0 ];
 				currentTrackType.db_id = parseInt( currentTrackType.db_id );
@@ -157,10 +156,10 @@ function trackTypeAjaxCallback() {
 			trackTypeListOfNamesAndIds = xmlResponseData;
 			break;
 		case 'change_track_type':
-			appendMessage( 'change_track_type returned: ' + xmlResponseString );
+			emptyGlobalListBox();
 			break;
 		case 'remove_track_type':
-			appendMessage( 'remove_track_type returned: ' + xmlResponseString );
+			emptyGlobalListBox();
 			break;
 		default:
 			appendMessage( '(default) background ajax exchange returned: ' + xmlResponseString );
@@ -176,15 +175,9 @@ function addTrackType() {
 }
 
 function getNewTrackType( trackTypeDbId ) {
-	var trackTypeId;
-	if( trackTypeDbId === undefined ) {
-		trackTypeId = 'default';
-	} else {
-		trackTypeId = trackTypeDbId;
-	}
 	trackTypeAjaxFunctionSent = 'get_track_type';
 	trackTypeAjaxExchangePending = true;
-	ajaxExchange( trackTypeAjaxFunctionSent, trackTypeId, 0, trackTypeAjaxCallback );
+	ajaxExchange( trackTypeAjaxFunctionSent, trackTypeDbId, 0, trackTypeAjaxCallback );
 }
 
 // Choosing a track type is a three-step process:
@@ -197,15 +190,20 @@ function chooseTrackType() {
 
 //  2) put the list into the screen the user can see it
 function makeTrackTypeListBox() {
-	var lb = new listBox( selectTrackTypeItemClickedCallback );
+	globalListBox = new listBox( selectTrackTypeItemClickedCallback );
 	for( var i = 0; i < trackTypeListOfNamesAndIds.length; i++ ) {
-		lb.addItem( trackTypeListOfNamesAndIds[ i ][ 'track_type_name' ], parseInt( trackTypeListOfNamesAndIds[ i ][ 'db_id' ] ) )
+		globalListBox.addItem( trackTypeListOfNamesAndIds[ i ][ 'track_type_name' ], parseInt( trackTypeListOfNamesAndIds[ i ][ 'db_id' ] ) )
 	}
 }
 
 //  3) each time the user clicks on an item on the list, get and install that track type
 function selectTrackTypeItemClickedCallback( trackTypeListItemObject ) {
-	getNewTrackType( trackTypeListItemObject.value );
+	if( trackTypeListItemObject.value  == -1 ) {
+		enableChooseButtons();
+		globalListBox.dispose();
+	} else {
+		getNewTrackType( trackTypeListItemObject.value );
+	}
 }
 
 function changeTrackType( dbId, arrayOfChangedFields ) {
@@ -227,10 +225,9 @@ var trackLayoutAjaxFunctionSent;
 function trackLayoutAjaxCallback() {
 	switch( trackLayoutAjaxFunctionSent ) {
 		case 'add_track_layout':
-			appendMessage( 'add_track_layout returned: ' + xmlResponseString );
+			emptyGlobalListBox();
 			break;
 		case 'get_track_layout':
-			appendMessage( 'get_track_layout has returned.' );
 			if( xmlResponseData != undefined ) {
 				databaseTrackLayoutArray = xmlResponseData;
 				unpackCurrentTrackLayoutFromDatabaseArray();
@@ -241,10 +238,10 @@ function trackLayoutAjaxCallback() {
 			trackLayoutListOfNamesAndIds = xmlResponseData;
 			break;
 		case 'change_track_layout':
-			appendMessage( 'change_track_layout returned: ' + xmlResponseString );
+			emptyGlobalListBox();
 			break;
 		case 'remove_track_layout':
-			appendMessage( 'remove_track_layout returned: ' + xmlResponseString );
+			emptyGlobalListBox();
 			break;
 		default:
 			appendMessage( '(default) background ajax exchange returned: ' + xmlResponseString );
@@ -261,15 +258,9 @@ function addTrackLayout() {
 }
 
 function getNewTrackLayout( trackLayoutDbId ) {
-	var trackLayoutId;
-	if( trackLayoutDbId === undefined ) {
-		trackLayoutId = 'default';
-	} else {
-		trackLayoutId = trackLayoutDbId;
-	}
 	trackLayoutAjaxFunctionSent = 'get_track_layout';
 	trackLayoutAjaxExchangePending = true;
-	ajaxExchange( trackLayoutAjaxFunctionSent, trackLayoutId, 0, trackLayoutAjaxCallback );
+	ajaxExchange( trackLayoutAjaxFunctionSent, trackLayoutDbId, 0, trackLayoutAjaxCallback );
 }
 
 // Choosing a track layout is a three-step process:
@@ -282,15 +273,20 @@ function chooseTrackLayout() {
 
 //  2) put the list into the screen the user can see it
 function makeTrackLayoutListBox() {
-	var lb = new listBox( selectTrackLayoutItemClickedCallback );
+	globalListBox = new listBox( selectTrackLayoutItemClickedCallback );
 	for( var i = 0; i < trackLayoutListOfNamesAndIds.length; i++ ) {
-		lb.addItem( trackLayoutListOfNamesAndIds[ i ][ 'track_layout_name' ], parseInt( trackLayoutListOfNamesAndIds[ i ][ 'track_layout_id' ] ) )
+		globalListBox.addItem( trackLayoutListOfNamesAndIds[ i ][ 'track_layout_name' ], parseInt( trackLayoutListOfNamesAndIds[ i ][ 'track_layout_id' ] ) )
 	}
 }
 
 //  3) each time the user clicks on an item on the list, get and install that track layout
 function selectTrackLayoutItemClickedCallback( trackLayoutListItemObject ) {
-	getNewTrackLayout( trackLayoutListItemObject.value );
+	if( trackLayoutListItemObject.value  == -1 ) {
+		enableChooseButtons();
+		globalListBox.dispose();
+	} else {
+		getNewTrackLayout( trackLayoutListItemObject.value );
+	}
 }
 
 function changeTrackLayout() {
@@ -311,7 +307,7 @@ function packNewTrackLayoutIntoDatabaseArray() {
 	var startingPointObject = new Object();
 	startingPointObject.track_layout_name = toBeAddedTrackLayoutLayoutName;
 	startingPointObject.author_name = toBeAddedTrackLayoutAuthorName;
-	startingPointObject.track_layout_id = toBeAddedTrackLayoutLayoutId;
+	startingPointObject.track_layout_id = 0;
 	startingPointObject.section_sequence_number = 1;
 	startingPointObject.section_type = 'origin';
 	startingPointObject.section_parameter_1 = toBeAddedTrackLayoutStartingPoint.x;
@@ -321,7 +317,7 @@ function packNewTrackLayoutIntoDatabaseArray() {
 	var startingDirectionObject = new Object();
 	startingDirectionObject.track_layout_name = toBeAddedTrackLayoutLayoutName;
 	startingDirectionObject.author_name = toBeAddedTrackLayoutAuthorName;
-	startingDirectionObject.track_layout_id = toBeAddedTrackLayoutLayoutId;
+	startingDirectionObject.track_layout_id = 0;
 	startingDirectionObject.section_sequence_number = 2;
 	startingDirectionObject.section_type = 'direction';
 	startingDirectionObject.section_parameter_1 = toBeAddedTrackLayoutStartingDirection.x;
@@ -332,7 +328,7 @@ function packNewTrackLayoutIntoDatabaseArray() {
 		var trackSectionObject = new Object();
 		trackSectionObject.track_layout_name = toBeAddedTrackLayoutLayoutName;
 		trackSectionObject.author_name = toBeAddedTrackLayoutAuthorName;
-		trackSectionObject.track_layout_id = toBeAddedTrackLayoutLayoutId;
+		trackSectionObject.track_layout_id = 0;
 		trackSectionObject.section_sequence_number = i + 3 ;
 		trackSectionObject.section_type = toBeAddedTrackLayoutSections[ i ].section_type;
 		trackSectionObject.section_parameter_1 = toBeAddedTrackLayoutSections[ i ].rise;
@@ -436,12 +432,13 @@ function initializeTrack() {
 function installTrack() {
 	// After a track definition has been arranged, process it into a working track
 	turnOffAllDragPoints();
-	currentDragPoint = 0;
+	initializeDragPoint();
 	removeExistingTrackMeshesAndBodies();
 	figureTrackPieces();
 	figureTrackElevations();
 	copyPathElevationsToVertices();
 	figureTrackPieceCenters();
+	figureTrackPieceEulers();
 	makeTrackMeshesAndBodies();
 	makeDragPointsFromTrackPieces();
 	turnOffAllDragPoints();
@@ -904,12 +901,14 @@ function figureTrackElevations() {
 			var iterationStartingPieceIndex = currentTrackLayoutSections[ currentSectionIndex ].beginPieceIndex;
 			var iterationEndingPieceIndex = currentTrackLayoutSections[ currentSectionIndex ].endPieceIndex;
 			var nextStartingSlopeAngle, nextEndingSlopeAngle;
-			var finished = false, overFlowed = false, loopLimit = 0;
+			// var finished = false, overFlowed = false, loopLimit = 0; ....... Overflow is when small piece start index > end index...
+			var finished = false, overFlowed = false;
 			while( !finished ) {
 				// Find the effective slope of this iteration's entire center (i.e. so-far-unprocessed) region
 				// ... in each iteration, this "center gap" includes the starting and ending pieces and
 				// ... extends from the pathStartPoint of the starting piece to the pathFinishPoint of the ending piece
-				var iterationCenterRise = iterationEndElevation - iterationStartElevation;
+				// var iterationCenterRise = iterationEndElevation - iterationStartElevation;
+				var iterationCenterRise = trackSmallPieces[ iterationEndingPieceIndex ].piecePathFinishPoint.y - trackSmallPieces[ iterationStartingPieceIndex ].piecePathStartPoint.y;
 				var iterationCenterLength = iterationGapLength( iterationStartingPieceIndex, iterationEndingPieceIndex );
 				var iterationCenterSlopeAngle = Math.atan( iterationCenterRise / iterationCenterLength );
 				var iterationStartingSlopeVariance = Math.abs( iterationCenterSlopeAngle - iterationStartingSlopeAngle );
@@ -963,8 +962,10 @@ function figureTrackElevations() {
 						iterationEndingSlopeAngle = nextEndingSlopeAngle;
 					}
 				}
-				loopLimit++;
-				if( loopLimit > 500 ) {
+				// loopLimit++;
+				// if( loopLimit > 1500 ) {
+				if( ( iterationStartingPieceIndex + 2 ) > iterationEndingPieceIndex ) {
+					// We've run out of room to make smooth slope adjustment...
 					overFlowed = true;
 					finished = true;
 				}
@@ -1062,6 +1063,64 @@ function figureTrackPieceCenters() {
 		trackSmallPieces[ currentPieceIndex ].center = trackPieceCenterPoint;
 	}
 };
+
+// Figure out the THREE.JS Eulers for the yaw and pitch of each small piece
+function figureTrackPieceEulers() {
+	for( currentPieceIndex = 0; currentPieceIndex < trackSmallPieces.length; currentPieceIndex++ ) {
+		// We define a yaw angle that runs from zero degrees when parallel to the global +X axis and moves counter clockwise as
+		//	the angle increases when viewed from global +Y looking down at the global XZ plane. Yaw runs from 0 to 2 pi radians,
+		//	is zero in the +X direction, PI/2 in the -Z direction, PI in the -X direction and 3/2 PI in the +Z direction.
+		// We define a pitch angle that is 0 for level and runs from -PI/2 (pointing straight down) to +PI/2 (pointing straight up).
+		// First, pick up the global coordinate version of the distance between the start and finish of the small piece's path
+		var deltaX = trackSmallPieces[ currentPieceIndex ].piecePathFinishPoint.x - trackSmallPieces[ currentPieceIndex ].piecePathStartPoint.x;
+		var deltaY = trackSmallPieces[ currentPieceIndex ].piecePathFinishPoint.y - trackSmallPieces[ currentPieceIndex ].piecePathStartPoint.y;
+		var deltaZ = trackSmallPieces[ currentPieceIndex ].piecePathFinishPoint.z - trackSmallPieces[ currentPieceIndex ].piecePathStartPoint.z;
+		var thisPieceLength = smallPieceLength( currentPieceIndex );
+		// Then figure the yaw angle by taking the x and z components (y is vertical in three.js...) and treating each quadrant separately
+		var yawAngle;
+		if( deltaX < 0.0 ) {
+			// deltaX < 0.0 => quadrant II or III
+			if( deltaZ < 0.0 ) {
+				// deltaX < 0.0 and deltaZ < 0.0 => quadrant II
+				// ( PI/2 <=> PI radians... 90 <=> 180 degrees)
+				yawAngle = Math.PI / 2 + Math.atan( ( -deltaX ) / ( - deltaZ ) );
+			} else {
+				// deltaX < 0.0 and deltaZ >= 0.0 => quadrant III or -X axis if deltaZ is zero
+				// ( PI <=> 3/2 PI radians... 180 <=> 270 degrees)
+				yawAngle = Math.PI + Math.atan( deltaZ / ( -deltaX ) );
+			}
+		} else {
+			// deltaX >= 0.0 => quadrant I or IV
+			if( deltaZ < 0.0 ) {
+				// deltaX >= 0.0 and deltaZ < 0.0 => quadrant I or -Z axis if deltaX is zero
+				// ( 0 <=> PI/2 radians... 0 <=> 90 degrees)
+				if( deltaX == 0.0 ) {
+					yawAngle = Math.PI / 2;
+				} else {
+					yawAngle = Math.atan( ( - deltaZ ) / deltaX );
+				}
+
+			} else {
+				// deltaX >= 0.0 and deltaZ >= 0.0 => quadrant IV or +Z axis if deltaX is zero or +X axis if deltaZ is zero
+				// ( 3/2 PI <=> 2 PI radians... 270 <=> 360 degrees)
+				if( deltaZ == 0.0 ) {
+					yawAngle = 0.0;
+				} else {
+					yawAngle = 1.5 * Math.PI + Math.atan( deltaX / deltaZ );
+				}
+			}
+		}
+
+		// Then figure the pitch angle using the delta Y component and the small piece path length
+		var pitchAngle = Math.atan( deltaY / thisPieceLength );
+
+		// Make the Euler for this small piece using the yaw and pitch angles
+		var thisPieceEuler = new THREE.Euler();
+		thisPieceEuler.set( 0.0, yawAngle, pitchAngle );
+		trackSmallPieces[ currentPieceIndex ].orientationEuler = thisPieceEuler;
+	}
+}
+
 
 // Traverse a track layout list of small pieces and generate the corresponding meshes to be rendered and bodies for physics functions
 // Our track layout system generates the vertices of track pieces in global coordinates. Both Three.js and Cannon.js operate with vertices
@@ -1390,28 +1449,44 @@ function iterationGapLength( startingPieceIndex, endingPieceIndex ) {
 	return returnValue;
 };
 
-function makeDragPoint( pointLocation ) {
+function makeDragPointsFromTrackPieces() {
+	// Empty the array
+	dragPoints.length = 0;
+	// Add one drag point per small piece at the location of the piece's path start point
+	for( var currentPieceIndex = 0; currentPieceIndex < trackSmallPieces.length; currentPieceIndex++ ) {
+		makeDragPoint( currentPieceIndex );
+	}
+}
+function makeDragPoint( index ) {
 	var newPointLocation = new THREE.Vector3();
-	newPointLocation.copy( pointLocation );
+	newPointLocation.copy( trackSmallPieces[ index ].piecePathStartPoint );
 	var newVisiblePointMesh = new THREE.Mesh( new THREE.SphereGeometry( currentTrackType.drag_point_radius ), new THREE.MeshLambertMaterial( { color:currentTrackType.drag_point_color } ) );
-	newVisiblePointMesh.position.copy( pointLocation );
+	newVisiblePointMesh.position.copy( newPointLocation );
 	scene.add( newVisiblePointMesh );
+	// figure the direction from the previous drag point ("directionX") and the corresponding Y and Z vectors
+	// ("X" is "forward" => from small piece's path start point to its path finish point)
+	// ("Z" is "turn to the right from forward" => from small piece's path start point to its start right right top vertex)
+	// ("Y" is right-hand rule from Z to X ... in THREE.JS coordinates)
+	var directionX = new THREE.Vector3();
+	directionX.subVectors( trackSmallPieces[ index ].piecePathFinishPoint, trackSmallPieces[ index ].piecePathStartPoint );
+	var directionZ = new THREE.Vector3();
+	directionZ.subVectors( trackSmallPieces[ index ].startRightTopVertex, trackSmallPieces[ index ].piecePathStartPoint );
+	var directionY = new THREE.Vector3();
+	directionY.crossVectors( directionZ, directionX );
+	directionX.normalize();
+	directionY.normalize();
+	directionZ.normalize();
+	// make the drag point object and add it to the array of drag points
 	var newdragPoint = {
 		location: newPointLocation,
 		visible: true,
-		mesh: newVisiblePointMesh
+		mesh: newVisiblePointMesh,
+		dragDirectionX: directionX,
+		dragDirectionY: directionY,
+		dragDirectionZ: directionZ
 	}
 	dragPoints.push( newdragPoint );
 }
-// function turnOnAllDragPoints() {
-// 	for( var i = 0; i < dragPoints.length; i++ ) {
-// 		if( !dragPoints[ i ].visible ) {
-// 			dragPoints[ i ].visible = true;
-// 			scene.add( dragPoints[ i ].mesh );
-// 		}
-// 	}
-// 	dragPointsAreVisible = true;
-// }
 function turnOffAllDragPoints() {
 	for( var i = 0; i < dragPoints.length; i++ ) {
 		if( dragPoints[ i ].visible ) {
@@ -1434,10 +1509,12 @@ function turnOffDragPoint( index ) {
 		scene.remove( dragPoints[ index ].mesh );
 	}
 }
-function makeDragPointsFromTrackPieces() {
-	// Empty the array
-	dragPoints.length = 0;
-	for( var currentPieceIndex = 0; currentPieceIndex < trackSmallPieces.length; currentPieceIndex++ ) {
-		makeDragPoint( trackSmallPieces[ currentPieceIndex ].piecePathStartPoint );
+function offsetDragPointIndex( ) {
+	var returnInteger = currentDragPoint + dragPointOffset;
+	if( returnInteger < 0 ) {
+		returnInteger += dragPoints.length;
+	} else if( returnInteger > dragPoints.length ) {
+		returnInteger -= dragPoints.length;
 	}
+	return returnInteger;
 }

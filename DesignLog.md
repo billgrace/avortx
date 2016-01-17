@@ -159,20 +159,32 @@ The console should look something like a typical remote control for a robot toy 
 The robot entities are the challenge here. Let's start with something not-too-challenging and see how things develop.
 
 ---(clicking, clacking, ...)---
+## ( side note about THREE.JS and using images as 'textures' on mesh faces... )
+OK, a deep dive into why image files on spheres and cubes look good but on cylinders look awful - if I don't write this down I won't remember it all and it will likely be useful again down the road.
 
+Working on animating a cylinder to represent a robot wheel led to the point where REAL images were wanted for treads (the round wall - 'sidewall' - of the cylinder) and, well, call it hub caps and spokes (the flat circles - 'end caps' - of the cylinder).
 
+The sidewall mapped nicely to the entire image file but the end caps were repeats of the same image distorted to fit into a circle.
 
+Three.js makes renderable meshes out of triangular faces. The vertices of the triangles are the vertices of the mesh and are stored an array of Vector3 objects: Mesh.geometry.vertices[]. The face definitions are stored in a sibling array: Mesh.geometry.faces[]. These face definitions are an object THREE.Face3 which has nine members, four of which interest us here. The members 'a', 'b' and 'c' are integer indexes into the array of vertices to indicate the three particular vertices which make up the triangle of the face. The other item of interest to us here is 'materialIndex' and for now, we'll just tuck that name away and come back to it soon.
 
+A third sibling array of interest is Mesh.geometry.faceVertexUvs[]. I don't yet know why this is an array - it only has a single member in my stuff so far - but that single member is also an array of the same size as the array of faces, i.e. there's an entry for each face of the mesh. Each item in THIS array is in turn an array of 3 items and each of those is a THREE.Vector2 object. Hang in there - this DOES actually make sense very soon.
 
+If you stitch all this together the dots connect as so: For each vertex of each face of a mesh, there is a THREE.Vector2 object. The values of the 'x' and 'y' components of the Vector2 objects range from 0.0 to 1.0. If you take your image file and lay it flat on the desk, the lower left hand corner is x = 0, y = 0 and the upper left corner of the image is x = 0, y = 1 and the lower right corner is x = 1, y = 0 and the upper right corner is x = 1, y = 1.
 
+Soooooo, the rendering engine takes each triangular face in the mesh and looks up the three Vector2 objects that correspond to the vertices of that triangle and locates those three points in the image file rectangle and maps THAT triangle of image file onto THAT triangle of mesh face.
 
+Now, the tricky part about the cylinder..... The standard cylinder maps the faces of the cylinder wall very nicely to a rectangular image BUT it also maps the two end cap circles to that SAME rectangular image in an un-useful way. SO, we've added a script file ('shapes.js') that has a routine ('cylinderMeshUvForEndCapImages()') which accepts as arguments a cylinder mesh and an integer that can be set to 2 or 3. If the integer is 2 it means we've got two images being mapped to the cylinder and the two end caps share a single image. If the integer is 3, then we've got three images: one for the cylinder wall, one for the top end cap and one for the bottom end cap.
 
-
-
-
-
-
-
-
-
+The routine traverses the array of face3 objects in the mesh and adjusts the "meshIndex" parameter to have the end cap faces specify the proper images. It also traverses the array of UV coordinates and adjusts them so that the end cap faces are mapped to the circle (if the image is square) or ellipse (if the image is rectangular) circumscribed in the image.
+## ( side note about THREE.JS and the motion of a group of meshes... )
+It turns out that Three.js does a wonderful thing with multiple meshes once you get the hang of the "right" way to use it!
+Our application wants to have a robot scooting around a track or over a terrain and turn and twist appropriately. We also want to be able to make a robot up from any number of parts and have them all moving around in a realistic looking fashion.
+This was beginning to look very grim as a collection of pieces and a lot of arbitrary rotation, translation, Eulers, quaternions, etc.
+But there's a very neat and straightforward way to handle it all in Three.js. You create a sort of "root" mesh that will be manipulated in terms of translation and rotation.... this could be the 'chassis' of the robot, say. Then, for wheels and everything else, the meshes for those sub-parts are created and then ADDED TO THE ROOT MESH instead of individually added to the scene (rootMesh.add(subMesh) and then scene.add(rootMesh) rather than scene.add(rootMesh) and scene.add(subMesh)). Using this procedure, any future manipulations of the position and rotation of the root mesh carry the sub meshes along because the positions and rotations of the sub meshes set that sub mesh's position and rotation WITH RESPECT TO THE ROOT MESH! Not only that, but you can make future manipulations to the sub mesh position and rotation and that will continue to apply only to the relative position and rotation of the sub mesh with respect to the root mesh (which can be doing all kinds of unrelated motion around the scene and carries the sub meshes along).
+The beauty of it is that the rendering engine is doing all the heavy math and we programmers can concentrate on a position and rotation of the overall robot as things animate and, optionally, changes in relative positions and rotations of the sub meshes (such as wings flapping, wheels turning, ...).
+Delightful!!!!!
+### Here we pull the plug and declare an end to Version 2
+We've got a not-too-bad set up for backgrounds, track layouts and track types. We've also got the ability to select among some very simple robots and motive power (drag point tracking or spring connection to drag point). We need to do some serious planning to get data structures for robots, meshes, bodies, physics relationships, etc.
+### Version 3 will be about developing appropriate data structures
 

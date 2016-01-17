@@ -1,32 +1,12 @@
 <?php
 require_once 'core/avortx_init.php';
-
 if(Session::exists('home')) {
 	echo '<p>' . Session::flash('home') . '</p>';
 }
-
+$adminMode = false;
 $user = new User();
-// if($user->isLoggedIn()) {
-// ?>
-<!--
-	<p>Hello <a href="profile.php?user=<?php echo escape($user->data()->login_name); ?>"><?php echo escape($user->data()->login_name); ?></a>!</p>
-
-	<ul>
- 		<li><a href="update.php">Update details</a></li>
- 		<li><a href="changepassword.php">Change password</a></li>
- 		<li><a href="logout.php">Log out</a></li>
- 	</ul>
- -->
-  <?php
-
-// 	if($user->hasPermission('admin')) {
-// 		echo '<p>You are an administrator!</p>';
-// 	}
-
-// } else {
-// 	echo '<h1>You need to <a href="login.php">log in</a> or <a href="register.php">register</a></h1>';
-// }
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -42,15 +22,17 @@ $user = new User();
 	</style>
 </head>
 <body>
-	<!-- Dev - buttons, text entry and message display.... -->
 	<div id="messageDisplay" style="color:#332211;background-color:#00FFFF;opacity:0.6;position:absolute;left:0px;top:550px">
 	</div>
+
+<?php
+// Making editing available to a logged in admin only
+if($user->isLoggedIn()&&$user->hasPermission('admin')) {
+	$adminMode = true;
+?>
 	<div id="textInputDiv" style="color:#443322;background-color:#00ccff;opacity:0.8;position:absolute;right:0px;top:50px;display:none">
 		<table>
-<!-- 			<tr>
-				<td id="textInputLabel0">Parameter 0</td><td><input id="textInput0" type="text" size="50"></td>
-			</tr>
- -->			<tr>
+			<tr>
 				<td id="textInputLabel1">Parameter 1</td><td><input id="textInput1" type="text" size="50"></td>
 			</tr>
 			<tr>
@@ -100,25 +82,45 @@ $user = new User();
 			</tr>
 		</table>
 	</div>
-	<!-- Dev - buttons, text entry and message display.... -->
+<?php } ?>
 	<script type="text/javascript" src="script/three.min.js"></script>
 	<script type="text/javascript" src="script/OrbitControls.js"></script>
 	<script type="text/javascript" src="script/stats.min.js"></script>
 	<script type="text/javascript" src="script/cannon.min.js"></script>
 	<script type="text/javascript" src="script/CannonDebugRenderer.js"></script>
-	<script type="text/javascript" src="script/showVectors.js"></script>
-	<script type="text/javascript" src="script/controls.js"></script>
 	<script type="text/javascript" src="script/ajax.js"></script>
-	<script type="text/javascript" src="script/track.js"></script>
 	<script type="text/javascript" src="script/background.js"></script>
+	<script type="text/javascript" src="script/controls.js"></script>
+	<script type="text/javascript" src="script/robot.js"></script>
+	<script type="text/javascript" src="script/robotController.js"></script>
+	<script type="text/javascript" src="script/shapes.js"></script>
+	<script type="text/javascript" src="script/showVectors.js"></script>
+	<script type="text/javascript" src="script/track.js"></script>
 	<script type="text/javascript">
 
+		var kbuf;
+
+		var visibleRobotBodyOrientationVector;
+		var visibleAxes;
+
 		var dragPoints = [], currentDragPoint;
-		var currentDragPointBody;
+		var dragPointStandardSpeed = 50;
+		var dragPointSpeedAccumulator = 0;
+		var dragPointLastStepDistance;
+		var dragPointOffset = -3;
+		var dragPointEnabled = true;
+		var globalXAxisAngle = new THREE.Vector3( 1, 0, 0 );
+		var globalYAxisAngle = new THREE.Vector3( 0, 1, 0 );
+		var globalZAxisAngle = new THREE.Vector3( 0, 0, 1 );
+
+		var robotControllerPanel;
+		var speedSlider;
 
 		var animationPaused;
 
-		var frameCount = 0, slowMotion = false, outlineBodies = false;
+		var frameCount = 0;
+		// var slowMotion = false;
+		var outlineBodies = false;
 
 		var camera, renderer, scene, xLight, yLight, zLight;
 		var orbitControls;
@@ -136,12 +138,18 @@ $user = new User();
 
 		init();
 
-
+		// global variables for displaying lists of available items when it's time to choose
+		var globalListBox = undefined;
+		var needToshowRobotListWhenAvailable = false;
 		var needToshowBackgroundListWhenAvailable = false;
 		var needToshowTrackTypeListWhenAvailable = false;
 		var needToshowTrackLayoutListWhenAvailable = false;
+		function emptyGlobalListBox() {
+			if( globalListBox != undefined ) {
+				globalListBox.remove();
+			}
+		}
 
-		//Dev - A general purpose message display place on the left of the screen
 		function showMessage( message ) {
 			var messageDisplayElement = document.getElementById( "messageDisplay" );
 			messageDisplayElement.innerHTML = message;
@@ -157,45 +165,17 @@ $user = new User();
 		}
 			messageDisplayElement.innerHTML += message;
 		}
-		//Dev - A general purpose message display place on the left of the screen
 
-		//Dev - disable orbit controls when mouse is over button panel to allow text input
-		function textInputDivOnMouseOver() {
+		// disable orbit controls when mouse is over input panels to allow text input
+		function inputDivOnMouseOver() {
 			orbitControls.enabled = false;
 		}
-		function textInputDivOnMouseOut() {
+		function inputDivOnMouseOut() {
 			orbitControls.enabled = true;
 		}
-		//Dev - disable orbit controls when mouse is over button panel to allow text input
 
-		//Dev - Some buttons...
-
-
-
-		// function listboxCallback( listItemObject ) {
-		// 	showMessage( 'listboxCallback from item with value = ' + listItemObject.value );
-		// }
-		// var lb;
-		// function test1ButtonOnClick( e ) {
-		// 	lb = new listBox( listboxCallback );
-		// 	lb.addItem( "Hello?", 1 );
-		// 	lb.addItem( "Hey!", 2 );
-		// 	lb.addItem( "Hello?", 3 );
-		// 	lb.addItem( "Hey!", 4 );
-		// 	lb.addItem( "Hello?", 5 );
-		// 	lb.addItem( "Hey!", 6 );
-		// 	lb.addItem( "Hello?", 7 );
-		// 	lb.addItem( "Hey!", 8 );
-		// 	lb.addItem( "Hello?", 9 );
-		// 	lb.addItem( "Hey!", 10 );
-		// 	lb.addItem( "Hello?", 11 );
-		// 	lb.addItem( "Hey!", 12 );
-		// }
-		// function test2ButtonOnClick( e ) {
-		// }
-
-
-
+<?php if($adminMode) { ?>
+		//Dev - Editing buttons...
 		function editNothingButtonOnClick( e ) {
 			document.getElementById('textInputDiv').style.display = 'none';
 			bgButtonPanel.style.display = 'none';
@@ -253,18 +233,18 @@ $user = new User();
 			// document.getElementById('textInputLabel0').innerHTML = "db_id";
 			document.getElementById('textInputLabel1').innerHTML = "track_layout_name";
 			document.getElementById('textInputLabel2').innerHTML = "author_name";
-			document.getElementById('textInputLabel3').innerHTML = "track_layout_id";
-			document.getElementById('textInputLabel4').innerHTML = "origin.x";
-			document.getElementById('textInputLabel5').innerHTML = "origin.y";
-			document.getElementById('textInputLabel6').innerHTML = "origin.z";
-			document.getElementById('textInputLabel7').innerHTML = "direction.x";
-			document.getElementById('textInputLabel8').innerHTML = "direction.y";
-			document.getElementById('textInputLabel9').innerHTML = "direction.z";
-			document.getElementById('textInputLabel10').innerHTML = "section_type";
-			document.getElementById('textInputLabel11').innerHTML = "rise";
-			document.getElementById('textInputLabel12').innerHTML = "length";
-			document.getElementById('textInputLabel13').innerHTML = "radius";
-			document.getElementById('textInputLabel14').innerHTML = "angle (degrees)";
+			document.getElementById('textInputLabel3').innerHTML = "origin.x";
+			document.getElementById('textInputLabel4').innerHTML = "origin.y";
+			document.getElementById('textInputLabel5').innerHTML = "origin.z";
+			document.getElementById('textInputLabel6').innerHTML = "direction.x";
+			document.getElementById('textInputLabel7').innerHTML = "direction.y";
+			document.getElementById('textInputLabel8').innerHTML = "direction.z";
+			document.getElementById('textInputLabel9').innerHTML = "section_type";
+			document.getElementById('textInputLabel10').innerHTML = "rise";
+			document.getElementById('textInputLabel11').innerHTML = "length";
+			document.getElementById('textInputLabel12').innerHTML = "radius";
+			document.getElementById('textInputLabel13').innerHTML = "angle (degrees)";
+			document.getElementById('textInputLabel14').innerHTML = "(not used)";
 			document.getElementById('textInputLabel15').innerHTML = "(not used)";
 			document.getElementById('textInputLabel16').innerHTML = "(not used)";
 			document.getElementById('textInputDiv').style.display = 'block';
@@ -291,16 +271,8 @@ $user = new User();
 			currentBackground.image_filename_6 = document.getElementById( "textInput16" ).value;
 			addBackground();
 		}
-		// function getBgButtonOnClick( e ) {
-		// 	getNewBackground( document.getElementById( "textInput0" ).value );
-		// }
-		function chooseBgButtonOnClick( e ) {
-			needToshowBackgroundListWhenAvailable = true;
-			chooseBackground();
-		}
 		function chgBgButtonOnClick( e ) {
 			var fieldsToChange = Object();
-			// var dbIdToChange = document.getElementById( "textInput0" ).value;
 			var field1 = document.getElementById( "textInput1" ).value;
 			if( field1 != '' ) {
 				fieldsToChange.background_name = field1;
@@ -384,13 +356,6 @@ $user = new User();
 			currentTrackType.drag_point_color = document.getElementById( "textInput9" ).value;
 			addTrackType();
 		}
-		// function getTtButtonOnClick( e ) {
-		// 	getNewTrackType( document.getElementById( "textInput0" ).value );
-		// }
-		function chooseTtButtonOnClick( e ) {
-			needToshowTrackTypeListWhenAvailable = true;
-			chooseTrackType();
-		}
 		function chgTtButtonOnClick( e ) {
 			var fieldsToChange = Object();
 			// var dbIdToChange = document.getElementById( "textInput0" ).value;
@@ -439,22 +404,38 @@ $user = new User();
 		}
 		function strtTlButtonOnClick( e ) {
 			toBeAddedTrackLayoutSections = [];
-			toBeAddedTrackLayoutLayoutName = 
-			toBeAddedTrackLayoutAuthorName = 
-			toBeAddedTrackLayoutStartingPoint = 
-			toBeAddedTrackLayoutStartingDirection
+			toBeAddedTrackLayoutLayoutName = document.getElementById( "textInput1" ).value;
+			toBeAddedTrackLayoutAuthorName = document.getElementById( "textInput2" ).value;
+			toBeAddedTrackLayoutStartingPoint.set(
+				parseFloat( document.getElementById( "textInput3" ).value ),
+				parseFloat( document.getElementById( "textInput4" ).value ),
+				parseFloat( document.getElementById( "textInput5" ).value ) );
+			toBeAddedTrackLayoutStartingDirection.set(
+				parseFloat( document.getElementById( "textInput6" ).value ),
+				parseFloat( document.getElementById( "textInput7" ).value ),
+				parseFloat( document.getElementById( "textInput8" ).value ) );
 		}
 		function addTlButtonOnClick( e ) {
+			newSection = new Object();
+			newSection.section_type = document.getElementById( "textInput9" ).value;
+			newSection.rise = parseFloat( document.getElementById( "textInput10" ).value );
+			switch( newSection.section_type ) {
+				case 'straight':
+					newSection.length = parseFloat( document.getElementById( "textInput11" ).value );
+					break;
+				case 'right':
+				case 'left':
+					newSection.radius = parseFloat( document.getElementById( "textInput12" ).value );
+					newSection.angle = ( Math.PI * parseFloat( document.getElementById( "textInput13" ).value ) / 180.0 );
+					break;
+				default:
+					alert( 'switch default in addTlButtonOnClick');
+					break;
+			}
+			toBeAddedTrackLayoutSections.push( newSection );
 		}
 		function sndTlButtonOnClick( e ) {
 			addTrackLayout();
-		}
-		// function getTlButtonOnClick( e ) {
-		// 	getNewTrackLayout( document.getElementById( "textInput0" ).value )
-		// }
-		function chooseTlButtonOnClick( e ) {
-			needToshowTrackLayoutListWhenAvailable = true;
-			chooseTrackLayout();
 		}
 		function chgTlButtonOnClick( e ) {
 			// Replace the track layout in the database that has the currentTrackLayout.db_id to the one now in toBeAddedTrackLayout local storage
@@ -462,10 +443,81 @@ $user = new User();
 		}
 		function rmvTlButtonOnClick( e ) {
 			// removeTrackLayout( document.getElementById( "textInput0" ).value );
-			removeTrackLayout( currentTrackLayout.track_layout_id );
+			removeTrackLayout( currentTrackLayoutLayoutId );
 		}
 		//Dev - Some buttons...
+<?php } ?>
+		//All users (regular OR admin) - need to choose database items
+		function chooseRbButtonOnClick( e ) {
+			disableChooseButtons( 'Rb' );
+			emptyGlobalListBox();
+			needToshowRobotListWhenAvailable = true;
+			chooseRobot();
+		}
+		function chooseBgButtonOnClick( e ) {
+			disableChooseButtons( 'Bg' );
+			emptyGlobalListBox();
+			needToshowBackgroundListWhenAvailable = true;
+			chooseBackground();
+		}
+		function chooseTtButtonOnClick( e ) {
+			disableChooseButtons( 'Tt' );
+			emptyGlobalListBox();
+			needToshowTrackTypeListWhenAvailable = true;
+			chooseTrackType();
+		}
+		function chooseTlButtonOnClick( e ) {
+			disableChooseButtons( 'Tl' );
+			emptyGlobalListBox();
+			needToshowTrackLayoutListWhenAvailable = true;
+			chooseTrackLayout();
+		}
+		function enableChooseRbButton() {
+			document.getElementById( "chooseRbButton" ).disabled = false;
+		}
+		function disableChooseRbButton() {
+			document.getElementById( "chooseRbButton" ).disabled = true;
+		}
+		function enableChooseBgButton() {
+			document.getElementById( "chooseBgButton" ).disabled = false;
+		}
+		function disableChooseBgButton() {
+			document.getElementById( "chooseBgButton" ).disabled = true;
+		}
+		function enableChooseTtButton() {
+			document.getElementById( "chooseTtButton" ).disabled = false;
+		}
+		function disableChooseTtButton() {
+			document.getElementById( "chooseTtButton" ).disabled = true;
+		}
+		function enableChooseTlButton() {
+			document.getElementById( "chooseTlButton" ).disabled = false;
+		}
+		function disableChooseTlButton() {
+			document.getElementById( "chooseTlButton" ).disabled = true;
+		}
+		function enableChooseButtons() {
+			enableChooseRbButton();
+			enableChooseBgButton();
+			enableChooseTtButton();
+			enableChooseTlButton();
+		}
+		function disableChooseButtons( exceptFor ) {
+			if( exceptFor != 'Rb' ) {
+				disableChooseRbButton();
+			}
+			if( exceptFor != 'Bg' ) {
+				disableChooseBgButton();
+			}
+			if( exceptFor != 'Tt' ) {
+				disableChooseTtButton();
+			}
+			if( exceptFor != 'Tl' ) {
+				disableChooseTlButton();
+			}
+		}
 
+		//All users (regular OR admin) - need to choose database items
 
 		function init() {
 
@@ -475,53 +527,50 @@ $user = new User();
 			world.gravity.set( 0, -9.8, 0 );
 			world.broadphase = new CANNON.NaiveBroadphase();
 
-			//Dev - some text entry fields on the upper right of the screen
-			document.getElementById("textInputDiv").addEventListener("mouseover", textInputDivOnMouseOver);
-			document.getElementById("textInputDiv").addEventListener("mouseout", textInputDivOnMouseOut);
-			//Dev - some text entry fields on the upper right of the screen
+			// Controller panel
+			robotControllerPanel = new robotControllerPanel( "15%", "0px", "20%", "25%" );
+			robotControllerPanel.activate();
+			// Speed slider
+			speedSlider = new verticalSlider( 'image/redCircleSpeedSlider.png', 0.17, 0.78, 0.05, 0.02, 0.2, '#443322', 1, 100, 50 );
+			speedSlider.activate();
 
-			//Dev - Some buttons...
+			var chooseButtonPanel = document.createElement( "div" );
+			chooseButtonPanel.style.cssText = "position:absolute;right:0px;top:0px;display:block";
+			chooseButtonPanel.id = "chooseButtonPanel";
+			chooseButtonPanel.style.opacity = 0.8;
+			chooseButtonPanel.innerHTML = "";
+			document.body.appendChild( chooseButtonPanel );
+
+<?php if($adminMode) { ?>
+			// Provide normal mouse behavior for text entry fields
+			document.getElementById("textInputDiv").addEventListener("mouseover", inputDivOnMouseOver);
+			document.getElementById("textInputDiv").addEventListener("mouseout", inputDivOnMouseOut);
 
 			// Edit category select buttons
 			var editNothingButtonColor = "#999999";
 			var editBackgroundButtonColor = "#88BBFF";
 			var editTrackTypeButtonColor = "#88FF55";
 			var editTrackLayoutButtonColor = "#FF7755";
-			var csButtonPanel = document.createElement( "div" );
-			csButtonPanel.style.cssText = "position:absolute;right:0px;top:0px;display:block";
-			csButtonPanel.id = "csButtonPanel";
-			csButtonPanel.style.opacity = 0.8;
-			csButtonPanel.innerHTML = "";
-			document.body.appendChild( csButtonPanel );
-			// var test1Button = document.createElement( 'button' );
-			// test1Button.innerHTML = ' Test1 ';
-			// test1Button.onclick = test1ButtonOnClick;
-			// csButtonPanel.appendChild( test1Button );
-			// var test2Button = document.createElement( 'button' );
-			// test2Button.innerHTML = ' Test2 ';
-			// test2Button.onclick = test2ButtonOnClick;
-			// csButtonPanel.appendChild( test2Button );
 			var editNothingButton = document.createElement( "button" );
 			editNothingButton.style.backgroundColor = editNothingButtonColor;
 			editNothingButton.innerHTML = 'Edit<br>Nothing';
 			editNothingButton.onclick = editNothingButtonOnClick;
-			csButtonPanel.appendChild( editNothingButton );
+			document.getElementById("chooseButtonPanel").appendChild( editNothingButton );
 			var editBackgroundButton = document.createElement( "button" );
 			editBackgroundButton.style.backgroundColor = editBackgroundButtonColor;
 			editBackgroundButton.innerHTML = 'Edit<br>Background';
 			editBackgroundButton.onclick = editBackgroundButtonOnClick;
-			csButtonPanel.appendChild( editBackgroundButton );
+			document.getElementById("chooseButtonPanel").appendChild( editBackgroundButton );
 			var editTrackTypeButton = document.createElement( "button" );
 			editTrackTypeButton.style.backgroundColor = editTrackTypeButtonColor;
 			editTrackTypeButton.innerHTML = 'Edit<br>TrackType';
 			editTrackTypeButton.onclick = editTrackTypeButtonOnClick;
-			csButtonPanel.appendChild( editTrackTypeButton );
+			document.getElementById("chooseButtonPanel").appendChild( editTrackTypeButton );
 			var editTrackLayoutButton = document.createElement( "button" );
 			editTrackLayoutButton.style.backgroundColor = editTrackLayoutButtonColor;
 			editTrackLayoutButton.innerHTML = 'Edit<br>TrackLayout';
 			editTrackLayoutButton.onclick = editTrackLayoutButtonOnClick;
-			csButtonPanel.appendChild( editTrackLayoutButton );
-			// Edit category select buttons
+			document.getElementById("chooseButtonPanel").appendChild( editTrackLayoutButton );
 
 			// Background buttons
 			var bgButtonPanel = document.createElement( "div" );
@@ -535,16 +584,6 @@ $user = new User();
 			addBgButton.innerHTML = 'Add<br>Background';
 			addBgButton.onclick = addBgButtonOnClick;
 			bgButtonPanel.appendChild( addBgButton );
-			// var getBgButton = document.createElement( "button" );
-			// getBgButton.style.backgroundColor = editBackgroundButtonColor;
-			// getBgButton.innerHTML = 'Get<br>Background';
-			// getBgButton.onclick = getBgButtonOnClick;
-			// bgButtonPanel.appendChild( getBgButton );
-			var chooseBgButton = document.createElement( "button" );
-			chooseBgButton.style.backgroundColor = editBackgroundButtonColor;
-			chooseBgButton.innerHTML = 'Choose<br>Background';
-			chooseBgButton.onclick = chooseBgButtonOnClick;
-			bgButtonPanel.appendChild( chooseBgButton );
 			var chgBgButton = document.createElement( "button" );
 			chgBgButton.style.backgroundColor = editBackgroundButtonColor;
 			chgBgButton.innerHTML = 'Change<br>Background';
@@ -563,31 +602,21 @@ $user = new User();
 			ttButtonPanel.style.opacity = 0.5;
 			ttButtonPanel.innerHTML = "";
 			document.body.appendChild( ttButtonPanel );
-			var addttButton = document.createElement( "button" );
-			addttButton.style.backgroundColor = editTrackTypeButtonColor;
-			addttButton.innerHTML = 'Add<br>TrackType';
-			addttButton.onclick = addTtButtonOnClick;
-			ttButtonPanel.appendChild( addttButton );
-			// var getttButton = document.createElement( "button" );
-			// getttButton.style.backgroundColor = editTrackTypeButtonColor;
-			// getttButton.innerHTML = 'Get<br>TrackType';
-			// getttButton.onclick = getTtButtonOnClick;
-			// ttButtonPanel.appendChild( getttButton );
-			var choosettButton = document.createElement( "button" );
-			choosettButton.style.backgroundColor = editTrackTypeButtonColor;
-			choosettButton.innerHTML = 'Choose<br>TrackType';
-			choosettButton.onclick = chooseTtButtonOnClick;
-			ttButtonPanel.appendChild( choosettButton );
-			var chgttButton = document.createElement( "button" );
-			chgttButton.style.backgroundColor = editTrackTypeButtonColor;
-			chgttButton.innerHTML = 'Chg<br>TrackType';
-			chgttButton.onclick = chgTtButtonOnClick;
-			ttButtonPanel.appendChild( chgttButton );
-			var rmvttButton = document.createElement( "button" );
-			rmvttButton.style.backgroundColor = editTrackTypeButtonColor;
-			rmvttButton.innerHTML = 'Rmv<br>TrackType';
-			rmvttButton.onclick = rmvTtButtonOnClick;
-			ttButtonPanel.appendChild( rmvttButton );
+			var addTtButton = document.createElement( "button" );
+			addTtButton.style.backgroundColor = editTrackTypeButtonColor;
+			addTtButton.innerHTML = 'Add<br>TrackType';
+			addTtButton.onclick = addTtButtonOnClick;
+			ttButtonPanel.appendChild( addTtButton );
+			var chgTtButton = document.createElement( "button" );
+			chgTtButton.style.backgroundColor = editTrackTypeButtonColor;
+			chgTtButton.innerHTML = 'Chg<br>TrackType';
+			chgTtButton.onclick = chgTtButtonOnClick;
+			ttButtonPanel.appendChild( chgTtButton );
+			var rmvTtButton = document.createElement( "button" );
+			rmvTtButton.style.backgroundColor = editTrackTypeButtonColor;
+			rmvTtButton.innerHTML = 'Rmv<br>TrackType';
+			rmvTtButton.onclick = rmvTtButtonOnClick;
+			ttButtonPanel.appendChild( rmvTtButton );
 
 			// Track layout buttons
 			var tlButtonPanel = document.createElement( "div" );
@@ -596,43 +625,68 @@ $user = new User();
 			tlButtonPanel.style.opacity = 0.5;
 			tlButtonPanel.innerHTML = "";
 			document.body.appendChild( tlButtonPanel );
-			var strttlButton = document.createElement( "button" );
-			strttlButton.style.backgroundColor = editTrackLayoutButtonColor;
-			strttlButton.innerHTML = 'Start<br>TrackLayout';
-			strttlButton.onclick = strtTlButtonOnClick;
-			tlButtonPanel.appendChild( strttlButton );
-			var addtlButton = document.createElement( "button" );
-			addtlButton.style.backgroundColor = editTrackLayoutButtonColor;
-			addtlButton.innerHTML = 'Add<br>TLSection';
-			addtlButton.onclick = addTlButtonOnClick;
-			tlButtonPanel.appendChild( addtlButton );
-			var sndtlButton = document.createElement( "button" );
-			sndtlButton.style.backgroundColor = editTrackLayoutButtonColor;
-			sndtlButton.innerHTML = 'Send<br>TrackLayout';
-			sndtlButton.onclick = sndTlButtonOnClick;
-			tlButtonPanel.appendChild( sndtlButton );
-			// var gettlButton = document.createElement( "button" );
-			// gettlButton.style.backgroundColor = editTrackLayoutButtonColor;
-			// gettlButton.innerHTML = 'Get<br>TrackLayout';
-			// gettlButton.onclick = getTlButtonOnClick;
-			// tlButtonPanel.appendChild( gettlButton );
-			var choosetlButton = document.createElement( "button" );
-			choosetlButton.style.backgroundColor = editTrackLayoutButtonColor;
-			choosetlButton.innerHTML = 'Choose<br>TrackLayout';
-			choosetlButton.onclick = chooseTlButtonOnClick;
-			tlButtonPanel.appendChild( choosetlButton );
-			var chgtlButton = document.createElement( "button" );
-			chgtlButton.style.backgroundColor = editTrackLayoutButtonColor;
-			chgtlButton.innerHTML = 'Change<br>TrackLayout';
-			chgtlButton.onclick = chgTlButtonOnClick;
-			tlButtonPanel.appendChild( chgtlButton );
-			var rmvtlButton = document.createElement( "button" );
-			rmvtlButton.style.backgroundColor = editTrackLayoutButtonColor;
-			rmvtlButton.innerHTML = 'Remove<br>TrackLayout';
-			rmvtlButton.onclick = rmvTlButtonOnClick;
-			tlButtonPanel.appendChild( rmvtlButton );
+			var strtTlButton = document.createElement( "button" );
+			strtTlButton.style.backgroundColor = editTrackLayoutButtonColor;
+			strtTlButton.innerHTML = 'Start<br>TrackLayout';
+			strtTlButton.onclick = strtTlButtonOnClick;
+			tlButtonPanel.appendChild( strtTlButton );
+			var addTlButton = document.createElement( "button" );
+			addTlButton.style.backgroundColor = editTrackLayoutButtonColor;
+			addTlButton.innerHTML = 'Add<br>TLSection';
+			addTlButton.onclick = addTlButtonOnClick;
+			tlButtonPanel.appendChild( addTlButton );
+			var sndTlButton = document.createElement( "button" );
+			sndTlButton.style.backgroundColor = editTrackLayoutButtonColor;
+			sndTlButton.innerHTML = 'Send<br>TrackLayout';
+			sndTlButton.onclick = sndTlButtonOnClick;
+			tlButtonPanel.appendChild( sndTlButton );
+			var chgTlButton = document.createElement( "button" );
+			chgTlButton.style.backgroundColor = editTrackLayoutButtonColor;
+			chgTlButton.innerHTML = 'Change<br>TrackLayout';
+			chgTlButton.onclick = chgTlButtonOnClick;
+			tlButtonPanel.appendChild( chgTlButton );
+			var rmvTlButton = document.createElement( "button" );
+			rmvTlButton.style.backgroundColor = editTrackLayoutButtonColor;
+			rmvTlButton.innerHTML = 'Remove<br>TrackLayout';
+			rmvTlButton.onclick = rmvTlButtonOnClick;
+			tlButtonPanel.appendChild( rmvTlButton );
 
 			//Dev - Some buttons...
+<?php } ?>
+			// Both Admin AND non-Admin users need the "choose" buttons
+			var userChooseButtonColor = "#FFFFFF";
+			var chooseRbButton = document.createElement( "button" );
+			chooseRbButton.id = "chooseRbButton";
+			chooseRbButton.style.backgroundColor = userChooseButtonColor;
+			chooseRbButton.innerHTML = 'Choose<br>Robot';
+			chooseRbButton.onclick = chooseRbButtonOnClick;
+			chooseRbButton.ontouchstart = chooseRbButtonOnClick;
+			document.getElementById("chooseButtonPanel").appendChild( chooseRbButton );
+
+			var chooseBgButton = document.createElement( "button" );
+			chooseBgButton.id = "chooseBgButton";
+			chooseBgButton.style.backgroundColor = userChooseButtonColor;
+			chooseBgButton.innerHTML = 'Choose<br>Background';
+			chooseBgButton.onclick = chooseBgButtonOnClick;
+			chooseBgButton.ontouchstart = chooseBgButtonOnClick;
+			document.getElementById("chooseButtonPanel").appendChild( chooseBgButton );
+
+			var chooseTtButton = document.createElement( "button" );
+			chooseTtButton.id = "chooseTtButton";
+			chooseTtButton.style.backgroundColor = userChooseButtonColor;
+			chooseTtButton.innerHTML = 'Choose<br>Track type';
+			chooseTtButton.onclick = chooseTtButtonOnClick;
+			chooseTtButton.ontouchstart = chooseTtButtonOnClick;
+			document.getElementById("chooseButtonPanel").appendChild( chooseTtButton );
+
+			var chooseTlButton = document.createElement( "button" );
+			chooseTlButton.id = "chooseTlButton";
+			chooseTlButton.style.backgroundColor = userChooseButtonColor;
+			chooseTlButton.innerHTML = 'Choose<br>Track layout';
+			chooseTlButton.onclick = chooseTlButtonOnClick;
+			chooseTlButton.ontouchstart = chooseTlButtonOnClick;
+			document.getElementById("chooseButtonPanel").appendChild( chooseTlButton );
+
 			initializeTrack();
 			initializeBackground();
 
@@ -659,49 +713,27 @@ $user = new User();
 			zMinusLight = new THREE.DirectionalLight( 0xffffff );
 			zMinusLight.position.set( 0, 0, -1 ).normalize();
 			scene.add( zMinusLight );
-			// var ambientLight = new THREE.AmbientLight( 0x555555 );
-			// scene.add( ambientLight );
 
-			// currentTrackPathPointBody = new CANNON.Body( { material: new CANNON.Material(), mass: 0 } );
-			currentDragPointBody = new CANNON.Body( { material: new CANNON.Material(), mass: 0 } );
-			currentDragPointBody.addShape( new CANNON.Sphere( currentTrackType.dragPointRadius ) );
-			world.addBody( currentDragPointBody );
-			currentDragPoint = 0;
-
-			// caDebugOutliner = new THREE.CannonDebugRenderer( scene, world );
+			caDebugOutliner = new THREE.CannonDebugRenderer( scene, world );
 
 			orbitControls = new THREE.OrbitControls( camera );
 			orbitControls.damping = 0.2;
 			orbitControls.maxDistance = ( 10000 );
 			orbitControls.addEventListener( 'change', render );
 
+			initializeRobots();
+			selectCurrentRobot( 2 );
+
 			// visibleAxes = new THREE.AxisHelper( 300 );
-			// visibleAxesVisible = false;
+			// scene.add( visibleAxes );
 			// cannonAxes = new CannonAxes( 400 );
 			// cannonAxesVisible = false;
 			// visibleCameraVector = new VisibleVector( camera.getWorldDirection(), camera.position, 500, 1.0, 0.5, 1.0 );
 			// scene.add( visibleCameraVector );
+			// visibleRobotBodyOrientationVector = new VisibleQuaternion( currentRobotMesh, 50 );
+			// scene.add( visibleRobotBodyOrientationVector );
 
-			robotMesh = new THREE.Mesh( new THREE.SphereGeometry( currentTrackType.width / 3 ), new THREE.MeshLambertMaterial( { color: 0x6789ab } ) );
-			scene.add( robotMesh );
-			var robotBodyMaterial = new CANNON.Material();
-			robotBody = new CANNON.Body( { material: robotBodyMaterial, mass: 100, linearDamping: 0.9, angularDamping: 0 } );
-			robotBody.addShape( new CANNON.Sphere( currentTrackType.width / 3 ) );
-			world.addBody( robotBody );
-
-			var mainSpring = new CANNON.Spring( currentDragPointBody, robotBody, {
-				localAnchorA: new CANNON.Vec3( 0, 0, 0 ),
-				localAnchorB: new CANNON.Vec3( 0, 0, 0 ),
-				restLength: 0,
-				stiffness: 2000,
-				damping: 1
-			} );
-			world.addEventListener( "postStep", function( event ) {
-				mainSpring.applyForce();
-			} );
-			var robotTrackMaterialContactEquation = new CANNON.ContactMaterial( robotBodyMaterial, trackBodyMaterial, { friction: 0, restitution: 0.0 } );
-			world.addContactMaterial( robotTrackMaterialContactEquation );
-
+			animationPaused = false;
 			restartAnimation();
 
 
@@ -709,23 +741,55 @@ $user = new User();
 			camera.position.z += 50;
 
 
-			// document.addEventListener( "keydown", checkKeyDown );
+			document.addEventListener( "keydown", checkKeyDown );
 			window.addEventListener( "resize", onWindowResize, false );
 			window.addEventListener( "orientationchange", onWindowResize, false );
 
 			stats = new Stats();
 			stats.domElement.style.position = "absolute";
 			stats.domElement.style.top = "0px";
-			stats.domElement.style.right = "50%";
+			stats.domElement.style.left = "0px";
 			document.body.appendChild( stats.domElement );
-
-			animationPaused = false;
 
 			animate();
 		}
 
+		function checkKeyDown( event ) {
+			if( event.defaultPrevented ) return;
+			var handled = false;
+			var keyCode = event.keyCode;
+			if( keyCode !== undefined ) {
+				switch( keyCode ) {
+					case 13: // enter
+						if( kbuf == 'lolol' ) {
+<?php if($adminMode) { 
+	echo "window.open( 'logout.php', '_self' );";
+	} else {
+	echo "window.open( 'login.php', '_self' );";
+	}
+?>
+						}
+						break;
+					case 32: // space bar
+						kbuf = '';
+						break;
+					case 76: // L
+						kbuf += 'l';
+						break;
+					case 79: // O
+						kbuf += 'o';
+						break;
+					default:
+						break;
+				}
+			}
+			if( handled ) {
+				event.preventDefault();
+			}
+		}
+
 		function moveMeshToBody() {
-			robotMesh.position.copy( robotBody.position );
+			currentRobotMesh.position.copy( robotBody.position );
 		}
 
 		function onWindowResize() {
@@ -737,36 +801,78 @@ $user = new User();
 		function restartAnimation() {
 			robotBody.position.copy( currentTrackLayoutStartingPoint );
 			robotBody.position.y += currentTrackType.width / 3;
-			currentDragPoint = 0;
+			initializeDragPoint();
 		}
 
 		function processPhysics() {
-			currentDragPointBody.position.copy( dragPoints[ currentDragPoint ].location );
-			world.step( timeStep );
+			updateRobotPosition();
+			switch ( currentRobotMotiveMode ) {
+				case 'dragPointSpring':
+					world.step( timeStep );
+					break;
+				case 'trackDragPoint':
+					break;
+				default:
+					break;
+			}
 			moveMeshToBody();
 		}
 
 		function render() {
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			camera.updateProjectionMatrix();
-			// visibleCameraVector.update( cameraLookingAtVector );
 			renderer.render( scene, camera );
+		}
+
+		function initializeDragPoint() {
+			currentDragPoint = 0;
+			dragPointLastStepDistance = 0;
+		}
+		function enableDragPoints() {
+			dragPointEnabled = true;
+		}
+		function disableDragPoints() {
+			dragPointEnabled = false;
+		}
+		function nextDragPoint() {
+			// animate the drag point
+			if( !dragPointEnabled ) return;
+			// proceed along the array of drag points on the track according to the current speed setting
+			dragPointSpeed = speedSlider.currentValue;
+			dragPointSpeedAccumulator += dragPointSpeed;
+			dragPointLastStepDistance = 0;
+			var startingDragPointStepPosition = new THREE.Vector3();
+			startingDragPointStepPosition.copy( dragPoints[ currentDragPoint ].location );
+			while( dragPointSpeedAccumulator > dragPointStandardSpeed ) {
+				dragPointSpeedAccumulator -= dragPointStandardSpeed;
+				turnOffDragPoint( currentDragPoint );
+				dragPointLastStepDistance += currentTrackType.small_piece_length;
+				currentDragPoint++;
+				if( currentDragPoint >= dragPoints.length ) { currentDragPoint -= dragPoints.length; }
+				turnOnDragPoint( currentDragPoint );
+			}
+			// if we've moved to a new drag point, adjust the robot as needed
+			if( dragPointLastStepDistance > 0 ) {
+				animateRobotAssembly();
+			}
 		}
 
 		function animate() {
 			requestAnimationFrame( animate );
+
 			stats.update();
+
+			if( needToshowRobotListWhenAvailable ) {
+				// if( !backgroundAjaxExchangePending ) {
+					needToshowRobotListWhenAvailable = false;
+					makeRobotListBox();
+				// }
+			}
 
 			if( needToshowBackgroundListWhenAvailable ) {
 				if( !backgroundAjaxExchangePending ) {
 					needToshowBackgroundListWhenAvailable = false;
 					makeBackgroundListBox();
-					// var message = 'Backgrounds:<br>';
-					// for( var i = 0; i < backgroundListOfNamesAndIds.length; i++ ) {
-					// 	message += 'db_id: ' + backgroundListOfNamesAndIds[ i ][ 'db_id' ] +
-					// 				', name: ' + backgroundListOfNamesAndIds[ i ][ 'background_name' ] + '<br>';
-					// }
-					// appendMessage( message );
 				}
 			}
 
@@ -774,12 +880,6 @@ $user = new User();
 				if( !trackTypeAjaxExchangePending ) {
 					needToshowTrackTypeListWhenAvailable = false;
 					makeTrackTypeListBox();
-					// var message = 'Track types:<br>';
-					// for( var i = 0; i < trackTypeListOfNamesAndIds.length; i++ ) {
-					// 	message += 'db_id: ' + trackTypeListOfNamesAndIds[ i ][ 'db_id' ] +
-					// 				', name: ' + trackTypeListOfNamesAndIds[ i ][ 'track_type_name' ] + '<br>';
-					// }
-					// appendMessage( message );
 				}
 			}
 
@@ -787,38 +887,18 @@ $user = new User();
 				if( !trackLayoutAjaxExchangePending ) {
 					needToshowTrackLayoutListWhenAvailable = false;
 					makeTrackLayoutListBox();
-					// var message = 'Track Layouts:<br>';
-					// for( var i = 0; i < trackLayoutListOfNamesAndIds.length; i++ ) {
-					// 	message += 'db_id: ' + trackLayoutListOfNamesAndIds[ i ][ 'track_layout_id' ] +
-					// 				', name: ' + trackLayoutListOfNamesAndIds[ i ][ 'track_layout_name' ] + '<br>';
-					// }
-					// appendMessage( message );
 				}
 			}
 
 			if( animationPaused ) return;
-			var timeToAnimate;
 			frameCount++;
-			if( slowMotion ) {
-				timeToAnimate = ( 0 ==  ( frameCount % 25 ) );
-			} else {
-				timeToAnimate = true;
-			}
-			if( ( frameCount % 3 ) == 0 ) {
-				turnOffDragPoint( currentDragPoint );
-				currentDragPoint++;
-				if( currentDragPoint >= dragPoints.length ) { currentDragPoint = 0; }
-				turnOnDragPoint( currentDragPoint );
-			}
-			if( timeToAnimate ) {
-				processPhysics();
-				// if( outlineBodies )
-				// 	caDebugOutliner.update();
-				// else
-				// 	caDebugOutliner.depopulate();
+			nextDragPoint();
+			processPhysics();
 
-				render();
-			}
+			// visibleRobotBodyOrientationVector.update( currentRobotMesh );
+			caDebugOutliner.update();
+
+			render();
 		}
 	</script>
 </body>

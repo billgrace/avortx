@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Canvas rendering exploration</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style type="text/css">
+		body {
+			margin: 0px;
+			background-color: #fff;
+			overflow: hidden;
+		}
+	</style>
+</head>
+<body>
+	<script type="text/javascript" src="script/three.min.js"></script>
+	<script type="text/javascript" src="script/OrbitControls.js"></script>
+	<script type="text/javascript" src="script/stats.min.js"></script>
+	<script type="text/javascript" src="script/Projector.js"></script>
+	<script type="text/javascript" src="script/CanvasRenderer.js"></script>
+	<script type="text/javascript" src="script/RaytracingRenderer.js"></script>
+	<script type="text/javascript" src="script/SoftwareRenderer.js"></script>
+	<script type="text/javascript" src="script/SVGRenderer.js"></script>
+	<script type="text/javascript" src="script/Detector.js"></script>
+
+	<script type="text/javascript">
+		var scene, camera, renderer, light, xLight, yLight, zLight, xMinusLight, yMinusLight, zMinusLight;
+		var orbitControls, stats;
+		var numberOfBalls = 1;
+		var numberOfBlocks = 10;
+		init();
+		function showMessage(message){
+			var messageElement = document.getElementById('messageDivId');
+			messageElement.innerHTML = message;
+		}
+		function init(){
+			var messageDiv = document.createElement('div');
+			messageDiv.id = 'messageDivId';
+			messageDiv.style.cssText = 'position:absolute;right:0px;top:0px;background-color:white';
+			messageDiv.style.opacity = 0.8;
+			document.body.appendChild(messageDiv);
+			scene = new THREE.Scene();
+			camera = new THREE.PerspectiveCamera( 50, 1.3, 1, 10000 );
+			camera.position.set( 50, 100, 200 );
+			camera.lookAt(new THREE.Vector3(0,0,0));
+			if(Detector.webgl){
+				showMessage('using WebGl renderer');
+				renderer = new THREE.WebGLRenderer();
+			} else {
+				showMessage('using Canvas renderer');
+				renderer = new THREE.CanvasRenderer();
+			}
+			document.body.appendChild(renderer.domElement);
+			// light = new THREE.AmbientLight(0x808080);
+			// light = new THREE.DirectionalLight(0xffffff);
+			// light.position.set( 0, 1, 0 ).normalize();
+			// scene.add(light);
+			xLight = new THREE.DirectionalLight( 0xffffff );
+			xLight.position.set( 1, 0, 0 ).normalize();
+			scene.add( xLight );
+			xMinusLight = new THREE.DirectionalLight( 0xffffff );
+			xMinusLight.position.set( -1, 0, 0 ).normalize();
+			scene.add( xMinusLight );
+			yLight = new THREE.DirectionalLight( 0xffffff );
+			yLight.position.set( 0, 1, 0 ).normalize();
+			scene.add( yLight );
+			yMinusLight = new THREE.DirectionalLight( 0xffffff );
+			yMinusLight.position.set( 0, -1, 0 ).normalize();
+			scene.add( yMinusLight );
+			zLight = new THREE.DirectionalLight( 0xffffff );
+			zLight.position.set( 0, 0, 1 ).normalize();
+			scene.add( zLight );
+			zMinusLight = new THREE.DirectionalLight( 0xffffff );
+			zMinusLight.position.set( 0, 0, -1 ).normalize();
+			scene.add( zMinusLight );
+
+			// add some balls
+			for(var i = 0; i < numberOfBalls; i++){
+				var ballColor = ( i * 0x123456 + 0x546839 ) % 0x1000000;
+				var ballRadius = 3 * Math.random() + 1;
+				var ballX = numberOfBalls * (0.5 - Math.random());
+				var ballY = numberOfBalls * (0.5 - Math.random());
+				var ballZ = numberOfBalls * (0.5 - Math.random());
+				var ball = new THREE.Mesh(new THREE.SphereGeometry(ballRadius), new THREE.MeshPhongMaterial({color:ballColor}));
+				ball.position.set(ballX, ballY, ballZ);
+				scene.add(ball);
+			}
+			// add some balls
+			for(var i = 0; i < numberOfBlocks; i++){
+				var blockColor = ( i * 0x123456 + 0x546839 ) % 0x1000000;
+				var blockLength = 3 * Math.random() + 1;
+				var blockWidth = 3 * Math.random() + 1;
+				var blockHeight = 3 * Math.random() + 1;
+				var blockX = numberOfBlocks * (0.5 - Math.random());
+				var blockY = numberOfBlocks * (0.5 - Math.random());
+				var blockZ = numberOfBlocks * (0.5 - Math.random());
+				var block = new THREE.Mesh(new THREE.BoxGeometry(blockLength, blockWidth, blockHeight), new THREE.MeshPhongMaterial({color:blockColor}));
+				block.position.set(blockX, blockY, blockZ);
+				scene.add(block);
+			}
+
+			// infrastructure
+			orbitControls = new THREE.OrbitControls( camera );
+			stats = new Stats();
+			stats.domElement.style.position = 'absolute';
+			stats.domElement.style.top = '0px';
+			stats.domElement.style.left = '0px';
+			document.body.appendChild(stats.domElement);
+			animate();
+		}
+		function render() {
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			camera.updateProjectionMatrix();
+			renderer.render( scene, camera );
+		}
+		function animate(){
+			requestAnimationFrame( animate );
+			stats.update();
+			render();
+		}
+	</script>
+</body>
+</html>

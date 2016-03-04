@@ -96,6 +96,15 @@
 //	to lists of track meshes and track bodies so the track can later be removed and regenerated as the
 //	process of designing and modifying a track layout proceeds.
 
+var needToshowTrackTypeListWhenAvailable = false;
+var needToshowTrackLayoutListWhenAvailable = false;
+var dragPoints = [], currentDragPoint;
+var dragPointStandardSpeed = 50;
+var dragPointSpeedAccumulator = 0;
+var dragPointLastStepDistance;
+var dragPointOffset = -3;
+var dragPointEnabled = true;
+
 // Characteristics that apply to the entire track are in the currentTrackType object
 var currentTrackType = new Object();
 // The track layout is a bit different since it occupies multiple records in the server database. This requires a
@@ -132,6 +141,161 @@ var toBeAddedTrackLayoutSections = [];
 var trackTypeListOfNamesAndIds = [];
 var trackTypeAjaxExchangePending = false;
 var trackTypeAjaxFunctionSent;
+
+function initializeTrack() {
+	animationStepCallbackList.push('trackAnimationStepCallback');
+	animationRestartCallbackList.push('trackAnimationRestartCallback');
+	// Before a real track definition is fetched from the database,
+	//	fill in the current objects with plausible values
+	currentTrackType.db_id = 1;
+	currentTrackType.track_type_name = 'Initial track type';
+	currentTrackType.author_name = 'A. Nonymous';
+	currentTrackType.thickness = 1;
+	currentTrackType.width = 25;
+	currentTrackType.small_piece_length = 5;
+	currentTrackType.slope_match_angle = 0.0872665;
+	currentTrackType.track_color = 0x905020;
+	currentTrackType.drag_point_radius = 5;
+	currentTrackType.drag_point_color = 0xff0000;
+	trackBodyMaterial = new CANNON.Material( "trackBodyMaterial" );
+/* replace small circle with bathtub terrain add-on
+	currentTrackLayoutLayoutName = 'Circle';
+	currentTrackLayoutAuthorName = 'Bill Grace';
+	currentTrackLayoutLayoutId = 0;
+	currentTrackLayoutStartingPoint.set( 0, 0, 0 );
+	currentTrackLayoutStartingDirection.set( 1, 0, 0 );
+	currentTrackLayoutSections.length = 0;
+	var trackSection1 = new Object();
+	trackSection1.section_type = 'left';
+	trackSection1.radius = 50;
+	trackSection1.angle = Math.PI / 2;
+	trackSection1.rise = 0;
+	currentTrackLayoutSections.push( trackSection1 );
+	var trackSection2 = new Object();
+	trackSection2.section_type = 'left';
+	trackSection2.radius = 50;
+	trackSection2.angle = Math.PI / 2;
+	trackSection2.rise = 0;
+	currentTrackLayoutSections.push( trackSection2 );
+	var trackSection3 = new Object();
+	trackSection3.section_type = 'left';
+	trackSection3.radius = 50;
+	trackSection3.angle = Math.PI / 2;
+	trackSection3.rise = 0;
+	currentTrackLayoutSections.push( trackSection3 );
+	var trackSection4 = new Object();
+	trackSection4.section_type = 'left';
+	trackSection4.radius = 50;
+	trackSection4.angle = Math.PI / 2;
+	trackSection4.rise = 0;
+	currentTrackLayoutSections.push( trackSection4 );
+*/
+	currentTrackLayoutLayoutName = 'Bathtub add-on';
+	currentTrackLayoutAuthorName = 'Bill Grace';
+	currentTrackLayoutLayoutId = 0;
+	currentTrackLayoutStartingPoint.set( 50, 0, 0 );
+	currentTrackLayoutStartingDirection.set( 1, 0, 0 );
+	currentTrackLayoutSections.length = 0;
+	var trackSection1 = {};
+	trackSection1.section_type = 'straight';
+	trackSection1.length = 100;
+	trackSection1.rise = 40;
+	currentTrackLayoutSections.push( trackSection1 );
+	var trackSection2 = {};
+	trackSection2.section_type = 'left';
+	trackSection2.radius = 50;
+	trackSection2.angle = Math.PI/2;
+	trackSection2.rise = 0;
+	currentTrackLayoutSections.push( trackSection2 );
+	var trackSection3 = {};
+	trackSection3.section_type = 'straight';
+	trackSection3.length = 100;
+	trackSection3.rise = 0;
+	currentTrackLayoutSections.push( trackSection3 );
+	var trackSection4 = {};
+	trackSection4.section_type = 'left';
+	trackSection4.radius = 50;
+	trackSection4.angle = Math.PI/2;
+	trackSection4.rise = 0;
+	currentTrackLayoutSections.push( trackSection4 );
+	var trackSection5 = {};
+	trackSection5.section_type = 'straight';
+	trackSection5.length = 150;
+	trackSection5.rise = -20;
+	currentTrackLayoutSections.push( trackSection5 );
+	var trackSection6 = {};
+	trackSection6.section_type = 'left';
+	trackSection6.radius = 50;
+	trackSection6.angle = Math.PI/2;
+	trackSection6.rise = 0;
+	currentTrackLayoutSections.push( trackSection6 );
+	var trackSection7 = {};
+	trackSection7.section_type = 'straight';
+	trackSection7.length = 50;
+	trackSection7.rise = 0;
+	currentTrackLayoutSections.push( trackSection7 );
+	installTrack();
+}
+
+function trackAnimationStepCallback() {
+	// nextDragPoint();
+	if( needToshowTrackTypeListWhenAvailable ) {
+		if( !trackTypeAjaxExchangePending ) {
+			needToshowTrackTypeListWhenAvailable = false;
+			makeTrackTypeListBox();
+		}
+	}
+	if( needToshowTrackLayoutListWhenAvailable ) {
+		if( !trackLayoutAjaxExchangePending ) {
+			needToshowTrackLayoutListWhenAvailable = false;
+			makeTrackLayoutListBox();
+		}
+	}
+}
+
+function trackAnimationRestartCallback(){
+	// extinguishAllDragPoints();
+	// initializeDragPoint();
+}
+
+function initializeDragPoint() {
+	currentDragPoint = 0;
+	dragPointLastStepDistance = 0;
+}
+function enableDragPoints() {
+	dragPointEnabled = true;
+}
+function disableDragPoints() {
+	dragPointEnabled = false;
+}
+function extinguishAllDragPoints(){
+	for(var i = 0; i < dragPoints.length; i++){
+		turnOffDragPoint(i);
+	}
+}
+function nextDragPoint() {
+	// animate the drag point
+	if( !dragPointEnabled ) return;
+	// proceed along the array of drag points on the track according to the current speed setting
+	// dragPointSpeed = speedSlider.currentValue;
+	dragPointSpeed = leftJoyStick.currentYValue * 100.0;
+	dragPointSpeedAccumulator += dragPointSpeed;
+	dragPointLastStepDistance = 0;
+	var startingDragPointStepPosition = new THREE.Vector3();
+	startingDragPointStepPosition.copy( dragPoints[ currentDragPoint ].location );
+	while( dragPointSpeedAccumulator > dragPointStandardSpeed ) {
+		dragPointSpeedAccumulator -= dragPointStandardSpeed;
+		turnOffDragPoint( currentDragPoint );
+		dragPointLastStepDistance += currentTrackType.small_piece_length;
+		currentDragPoint++;
+		if( currentDragPoint >= dragPoints.length ) { currentDragPoint -= dragPoints.length; }
+		turnOnDragPoint( currentDragPoint );
+	}
+	// if we've moved to a new drag point, adjust the robot as needed
+	if( dragPointLastStepDistance > 0 ) {
+		animateRobotAssembly();
+	}
+}
 
 function trackTypeAjaxCallback() {
 	switch( trackTypeAjaxFunctionSent ) {
@@ -190,9 +354,11 @@ function chooseTrackType() {
 
 //  2) put the list into the screen the user can see it
 function makeTrackTypeListBox() {
-	globalListBox = new listBox( selectTrackTypeItemClickedCallback );
+	globalListBox = new listBox({
+		itemClickedCallback:selectTrackTypeItemClickedCallback
+	});
 	for( var i = 0; i < trackTypeListOfNamesAndIds.length; i++ ) {
-		globalListBox.addItem( trackTypeListOfNamesAndIds[ i ][ 'track_type_name' ], parseInt( trackTypeListOfNamesAndIds[ i ][ 'db_id' ] ) )
+		globalListBox.addItem( trackTypeListOfNamesAndIds[ i ][ 'track_type_name' ], parseInt( trackTypeListOfNamesAndIds[ i ][ 'db_id' ] ) );
 	}
 }
 
@@ -273,9 +439,11 @@ function chooseTrackLayout() {
 
 //  2) put the list into the screen the user can see it
 function makeTrackLayoutListBox() {
-	globalListBox = new listBox( selectTrackLayoutItemClickedCallback );
+	globalListBox = new listBox({
+		itemClickedCallback:selectTrackLayoutItemClickedCallback
+	});
 	for( var i = 0; i < trackLayoutListOfNamesAndIds.length; i++ ) {
-		globalListBox.addItem( trackLayoutListOfNamesAndIds[ i ][ 'track_layout_name' ], parseInt( trackLayoutListOfNamesAndIds[ i ][ 'track_layout_id' ] ) )
+		globalListBox.addItem( trackLayoutListOfNamesAndIds[ i ][ 'track_layout_name' ], parseInt( trackLayoutListOfNamesAndIds[ i ][ 'track_layout_id' ] ) );
 	}
 }
 
@@ -380,53 +548,6 @@ function unpackCurrentTrackLayoutFromDatabaseArray() {
 		}
 		currentTrackLayoutSections.push( trackSectionObject );
 	}
-}
-
-function initializeTrack() {
-	// Before a real track definition is fetched from the database,
-	//	fill in the current objects with plausible values
-	currentTrackType.db_id = 1;
-	currentTrackType.track_type_name = 'Initial track type';
-	currentTrackType.author_name = 'A. Nonymous';
-	currentTrackType.thickness = 10;
-	currentTrackType.width = 50;
-	currentTrackType.small_piece_length = 10;
-	currentTrackType.slope_match_angle = 0.0872665;
-	currentTrackType.track_color = 0x905020;
-	currentTrackType.drag_point_radius = 5;
-	currentTrackType.drag_point_color = 0xff0000;
-	trackBodyMaterial = new CANNON.Material( "trackBodyMaterial" );
-	currentTrackLayoutLayoutName = 'Circle';
-	currentTrackLayoutAuthorName = 'Bill Grace';
-	currentTrackLayoutLayoutId = 0;
-	currentTrackLayoutStartingPoint.set( 0, 0, 0 );
-	currentTrackLayoutStartingDirection.set( 1, 0, 0 );
-	currentTrackLayoutSections.length = 0;
-	var trackSection1 = new Object();
-	trackSection1.section_type = 'left';
-	trackSection1.radius = 50;
-	trackSection1.angle = Math.PI / 2;
-	trackSection1.rise = 0;
-	currentTrackLayoutSections.push( trackSection1 );
-	var trackSection2 = new Object();
-	trackSection2.section_type = 'left';
-	trackSection2.radius = 50;
-	trackSection2.angle = Math.PI / 2;
-	trackSection2.rise = 0;
-	currentTrackLayoutSections.push( trackSection2 );
-	var trackSection3 = new Object();
-	trackSection3.section_type = 'left';
-	trackSection3.radius = 50;
-	trackSection3.angle = Math.PI / 2;
-	trackSection3.rise = 0;
-	currentTrackLayoutSections.push( trackSection3 );
-	var trackSection4 = new Object();
-	trackSection4.section_type = 'left';
-	trackSection4.radius = 50;
-	trackSection4.angle = Math.PI / 2;
-	trackSection4.rise = 0;
-	currentTrackLayoutSections.push( trackSection4 );
-	installTrack();
 }
 
 function installTrack() {

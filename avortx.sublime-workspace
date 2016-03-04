@@ -1,0 +1,1177 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"back",
+				"backgroundColor	(controls.js)"
+			],
+			[
+				"ren",
+				"renderer"
+			],
+			[
+				"orb",
+				"orbitControls"
+			],
+			[
+				"V",
+				"Vector3	(robot.js)"
+			],
+			[
+				"ang",
+				"angularVelocity	(vehicle.js)"
+			],
+			[
+				"round",
+				"roundEdgeBox"
+			],
+			[
+				"spr",
+				"springReturnHorizontal"
+			],
+			[
+				"anim",
+				"animationStepCallbackList	(animation.js)"
+			],
+			[
+				"wh",
+				"wheelPair"
+			],
+			[
+				"whems",
+				"wheelMeshes"
+			],
+			[
+				"rest",
+				"resetTerrainAnimation	(terrain.js)"
+			],
+			[
+				"setFrom",
+				"setFromAxisAngle"
+			],
+			[
+				"qua",
+				"quaternion	(index.php)"
+			],
+			[
+				"es",
+				"escapeRampBody"
+			],
+			[
+				"esc",
+				"escapeRampMesh"
+			],
+			[
+				"coni",
+				"controlImageCenterPixelX"
+			],
+			[
+				"kn",
+				"knobImageCenterPixelX"
+			],
+			[
+				"controlic",
+				"controlImageCenterPixelX"
+			],
+			[
+				"knoc",
+				"knobCenterLeftPixel"
+			],
+			[
+				"controlCen",
+				"controlImageCenterPixelX"
+			],
+			[
+				"dra",
+				"dragPoints"
+			],
+			[
+				"restart",
+				"restartAnimation"
+			],
+			[
+				"donebt",
+				"doneButtonTextColor"
+			],
+			[
+				"item",
+				"itemBackgroundColor"
+			],
+			[
+				"left",
+				"leftPercent"
+			],
+			[
+				"doneb",
+				"doneButtonText"
+			],
+			[
+				"hor",
+				"horizontalSlider	(controls.js)"
+			],
+			[
+				"start",
+				"startingText	(controls.js)"
+			],
+			[
+				"rul",
+				"rulingHeight"
+			],
+			[
+				"touchp",
+				"touchPointX"
+			],
+			[
+				"host",
+				"hostElementId"
+			],
+			[
+				"car",
+				"carMesh"
+			],
+			[
+				"boxb",
+				"boxBody"
+			],
+			[
+				"joy",
+				"joystickControl"
+			],
+			[
+				"whelm",
+				"wheelMeshes"
+			],
+			[
+				"whme",
+				"wheelMesh"
+			],
+			[
+				"Sphere",
+				"SphereGeometry"
+			],
+			[
+				"B",
+				"BoxGeometry"
+			],
+			[
+				"ste",
+				"steeringValueIncrement"
+			],
+			[
+				"right",
+				"rightRearWheel"
+			],
+			[
+				"wheb",
+				"wheelBodies"
+			],
+			[
+				"wht",
+				"wheelWidth"
+			],
+			[
+				"chass",
+				"chassisConnectionPointLocal"
+			],
+			[
+				"flw",
+				"floorWidthGridAreaCount"
+			],
+			[
+				"mesh",
+				"meshGeometryVertexIndex"
+			],
+			[
+				"g",
+				"geometry"
+			],
+			[
+				"gr",
+				"gridSize"
+			],
+			[
+				"all",
+				"allowSlidingOn"
+			],
+			[
+				"hostEl",
+				"hostElementId"
+			],
+			[
+				"wind",
+				"windowHeight"
+			],
+			[
+				"off",
+				"offsetLeft	(controls.js)"
+			],
+			[
+				"win",
+				"windowWidth"
+			],
+			[
+				"hostElem",
+				"hostElementId	(controls.js)"
+			],
+			[
+				"pau",
+				"pausePlayLeftPercent"
+			],
+			[
+				"cas",
+				"casterBracketMaterial"
+			],
+			[
+				"Cy",
+				"CylinderGeometry"
+			],
+			[
+				"casr",
+				"casterShaftRadius"
+			],
+			[
+				"paus",
+				"pauseBarClickCallback"
+			],
+			[
+				"animateMesh",
+				"animateMeshDragPointRolling"
+			],
+			[
+				"roll",
+				"rollingRadius"
+			],
+			[
+				"chil",
+				"children	(DesignLog.md)"
+			],
+			[
+				"ani",
+				"animateMeshDragPointRolling"
+			],
+			[
+				"castbb",
+				"casterBracketBaseMesh"
+			],
+			[
+				"cabrb",
+				"casterBracketBaseMesh"
+			],
+			[
+				"axl",
+				"axleBracket1	(axleBracket1.scad)"
+			],
+			[
+				"Me",
+				"MeshLambertMaterial"
+			],
+			[
+				"axle",
+				"axleBracket1	(ShapeIndex.md)"
+			],
+			[
+				"simpleAx",
+				"simpleAxleWheelMesh"
+			],
+			[
+				"simpla",
+				"simpleAxleWheelMaterialArray"
+			],
+			[
+				"Mesh",
+				"MeshFaceMaterial	(cy.html)"
+			],
+			[
+				"bou",
+				"meshBoundingRadius"
+			],
+			[
+				"sim",
+				"simpleAxleShaftMesh"
+			],
+			[
+				"simp",
+				"simpleAxleObject"
+			],
+			[
+				"robolis",
+				"robotObjectList"
+			],
+			[
+				"simplx",
+				"simpleAxleWheelCircumferenceMaterial"
+			],
+			[
+				"simpa",
+				"simpleAxleWheelMesh"
+			],
+			[
+				"lon",
+				"lonelyWheelMesh"
+			],
+			[
+				"animam",
+				"animateMeshDragPointRolling"
+			],
+			[
+				"ke",
+				"kennyRobotOneMesh"
+			],
+			[
+				"K",
+				"KennyRobotOneMesh"
+			],
+			[
+				"wing",
+				"wingedCardboardMesh"
+			],
+			[
+				"fly",
+				"flyingCardboardMesh"
+			],
+			[
+				"bea",
+				"beachBallMesh"
+			],
+			[
+				"lone",
+				"lonelyWheelMesh"
+			],
+			[
+				"cyl",
+				"cylinderMaterialArray"
+			],
+			[
+				"cylinm",
+				"cylinderMeshUvForEndCapImages	(shapes.js)"
+			],
+			[
+				"pi",
+				"pitchRotationAngleForThisStep"
+			],
+			[
+				"rol",
+				"robotObjectList"
+			],
+			[
+				"enab",
+				"enableChooseButtons"
+			],
+			[
+				"dragpl",
+				"dragPointLastStepDirectionVector"
+			],
+			[
+				"drapl",
+				"dragPointLastStepDirectionEuler"
+			],
+			[
+				"curre",
+				"currentRobotMesh"
+			],
+			[
+				"tra",
+				"trackDragPoint"
+			],
+			[
+				"dral",
+				"dragPointLastStepDirection	(index.php)"
+			],
+			[
+				"last",
+				"dragPointLastStepDirection"
+			],
+			[
+				"drap",
+				"dragPoints"
+			],
+			[
+				"sel",
+				"selectDefaultRobot"
+			],
+			[
+				"robo",
+				"robotControllerPanel"
+			],
+			[
+				"obi",
+				"orbitControls	(index.php)"
+			],
+			[
+				"disa",
+				"disableOrbitControls"
+			],
+			[
+				"dis",
+				"distances	(track.js)"
+			],
+			[
+				"ena",
+				"enableChooseBgButton	(index.php)"
+			],
+			[
+				"cho",
+				"chooseBgButton"
+			],
+			[
+				"glo",
+				"globalListBox"
+			],
+			[
+				"emp",
+				"emptyGlobalListBox"
+			],
+			[
+				"tob",
+				"toBeAddedTrackLayoutSections"
+			],
+			[
+				"section_p",
+				"section_parameter_2	(track.js)"
+			],
+			[
+				"sec",
+				"section_type"
+			],
+			[
+				"ins",
+				"instantiated"
+			],
+			[
+				"backl",
+				"backgroundListOfNamesAndIds"
+			],
+			[
+				"it",
+				"itemClickedCallback"
+			],
+			[
+				"test",
+				"test1ButtonOnClick"
+			],
+			[
+				"remove",
+				"removeEventListener	(ListBox.js)"
+			],
+			[
+				"pos",
+				"position:absolute"
+			],
+			[
+				"mess",
+				"messageDisplayElement"
+			],
+			[
+				"addtt",
+				"addttButton"
+			],
+			[
+				"edit",
+				"editTrackTypeButtonColor"
+			],
+			[
+				"editn",
+				"editNothingButtonColor"
+			],
+			[
+				"trakli",
+				"track_layout_id"
+			],
+			[
+				"slop",
+				"slope_match_angle"
+			],
+			[
+				"shap",
+				"shape_type"
+			],
+			[
+				"turn",
+				"turnOffDragPoint"
+			],
+			[
+				"unp",
+				"unpackCurrentTrackLayoutFromDatabaseArray"
+			],
+			[
+				"getNew",
+				"getNewTrackType	(track.js)"
+			],
+			[
+				"addT",
+				"addTrackType	(track.js)"
+			],
+			[
+				"table",
+				"table_row_with_max_track_layout_id"
+			],
+			[
+				"ri",
+				"right"
+			],
+			[
+				"author",
+				"author_name	(index.php)"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 327.0,
+		"selected_items":
+		[
+			[
+				"sub",
+				"Sublimerge: Compare Foremost Views"
+			],
+			[
+				"subl",
+				"Sublimerge: Compare Foremost Views"
+			],
+			[
+				"subli",
+				"Sublimerge"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"remo",
+				"Package Control: Remove Package"
+			],
+			[
+				"inst",
+				"Package Control: Install Package"
+			],
+			[
+				"rem",
+				"Package Control: Remove Package"
+			],
+			[
+				"INSTAL",
+				"Package Control: Install Package"
+			],
+			[
+				"REMO",
+				"Package Control: Remove Package"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: ",
+				"Package Control: Remove Package"
+			],
+			[
+				"ma",
+				"Markdown HTML Preview"
+			],
+			[
+				"pack",
+				"Package Control: Install Package"
+			],
+			[
+				"package",
+				"Package Control: Remove Package"
+			],
+			[
+				"remov",
+				"Package Control: Remove Package"
+			],
+			[
+				"git",
+				"Package Control: Install Package"
+			],
+			[
+				"instal",
+				"Package Control: Install Package"
+			],
+			[
+				"sublimerge",
+				"Sublimerge"
+			],
+			[
+				"prin",
+				"Print to HTML: print as HTML via browser"
+			],
+			[
+				"print",
+				"Print to HTML: print as HTML via browser"
+			],
+			[
+				"github",
+				"GitHub Flavored Markdown: Preview"
+			],
+			[
+				"marp",
+				"GitHub Flavored Markdown: Preview"
+			],
+			[
+				"mark",
+				"Set Syntax: Markdown"
+			],
+			[
+				"",
+				"Package Control: Remove Package"
+			],
+			[
+				"user",
+				"Preferences: Settings - User"
+			],
+			[
+				"Snippet: ",
+				"Snippet: html"
+			],
+			[
+				"Package Control: in",
+				"Package Control: Create Binary Package File"
+			]
+		],
+		"width": 467.0
+	},
+	"console":
+	{
+		"height": 125.0
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/Users/billgrace/Documents/Sites/avortx/script/physics.js",
+		"/Users/billgrace/Documents/Sites/avortx/index.php",
+		"/Users/billgrace/Documents/Sites/avortx/script/animation.js",
+		"/Users/billgrace/Documents/Sites/avortx/script/rendering.js",
+		"/Users/billgrace/Documents/Sites/avortx/script/terrain.js",
+		"/Users/billgrace/Documents/Sites/avortx/script/background.js",
+		"/Users/billgrace/Documents/Sites/avortx/script/controls.js",
+		"/Users/billgrace/Documents/Sites/avortx/script/vehicle.js",
+		"/Users/billgrace/Documents/Sites/avortx/script/robot.js",
+		"/Users/billgrace/Documents/Sites/avortx/script/track.js",
+		"/Users/billgrace/Documents/Sites/avortx/canvas.html",
+		"/Users/billgrace/Documents/Sites/avortx/script/robotController.js",
+		"/Volumes/Share/Personal/Projects/ScadUtilities/shapes.scad",
+		"/Volumes/Share/Personal/Projects/LindaInkStampPanel/inkStampPanel.scad",
+		"/Volumes/Share/Personal/Projects/school/BuckyBallElecticityFlow/BuckyBallHolderBottom.scad",
+		"/Volumes/Share/Personal/Projects/school/BuckyBallElecticityFlow/BuckyBallHolderTop.scad",
+		"/Users/billgrace/projects/Linda/inkStampPanel.scad",
+		"/Volumes/Share/Personal/Projects/LindaMilkWhipExtension/LindaExtension.scad",
+		"/Volumes/Share/Personal/school/MotorCradle/MotorCradle.scad",
+		"/Users/billgrace/Documents/Sites/avortx/DesignLog.md",
+		"/Users/billgrace/Documents/Sites/ca/controls.js",
+		"/Users/billgrace/Documents/Sites/ca/index.html",
+		"/Users/billgrace/Documents/Sites/ih/controls.js",
+		"/Users/billgrace/Documents/Sites/ca/cannonExploration.sublime-project",
+		"/Users/billgrace/Documents/Sites/ih/context.js",
+		"/Users/billgrace/Documents/Sites/rr/script/rrBackground.js",
+		"/Users/billgrace/Documents/Sites/rr/script/rrTrack.js",
+		"/Users/billgrace/Documents/Sites/ca/CannonDebugRenderer.js",
+		"/Volumes/Share/Legal/Licenses/Sublimerge license email",
+		"/Users/billgrace/Documents/Sites/avortx/shape.html",
+		"/Users/billgrace/Documents/Sites/ih/index.html",
+		"/Users/billgrace/Documents/Sites/avortx/shape/axleBracket1.scad",
+		"/Users/billgrace/Library/Application Support/Sublime Text 2/Packages/Default/Default (OSX).sublime-keymap",
+		"/Users/billgrace/Documents/Sites/avortx/shape/axleBracket1.stl",
+		"/Users/billgrace/Documents/Sites/rr/cy.html",
+		"/Users/billgrace/Documents/Sites/rr/shape/rrTrack.scad",
+		"/Users/billgrace/Library/Application Support/Sublime Text 2/Packages/User/Markdown.sublime-settings",
+		"/Users/billgrace/Library/Application Support/Sublime Text 2/Packages/MarkdownEditing/Markdown.sublime-settings",
+		"/Users/billgrace/Library/Application Support/Sublime Text 2/Packages/Markdown Preview/MarkdownPreview.sublime-settings",
+		"/Users/billgrace/Library/Application Support/Sublime Text 2/Packages/MarkdownEditing/README.md",
+		"/Users/billgrace/Library/Application Support/Sublime Text 2/Packages/MarkdownEditing/Default (OSX).sublime-keymap",
+		"/Users/billgrace/Library/Application Support/Sublime Text 2/Packages/User/Default (OSX).sublime-keymap",
+		"/Users/billgrace/Documents/Sites/avortx/script/shapes.js",
+		"/Users/billgrace/Documents/Sites/rr/ts.html",
+		"/Users/billgrace/Documents/Sites/avortx/script/showVectors.js",
+		"/Users/billgrace/Documents/Sites/rr/index.html",
+		"/Users/billgrace/Documents/Sites/avortx/script/ajax.js",
+		"/Users/billgrace/Documents/Sites/rr copy/index.html",
+		"/Users/billgrace/Documents/Sites/avortx/indexALaAlexGarrett.php",
+		"/Users/billgrace/Downloads/ListBox/JS/ListBox.js",
+		"/Users/billgrace/Documents/Sites/avortx/classes/TrackLayout.php",
+		"/Users/billgrace/Documents/Sites/avortx/classes/Background.php",
+		"/Users/billgrace/Documents/Sites/avortx/classes/DB.php",
+		"/Users/billgrace/Documents/Sites/avortx/ajax_handler.php",
+		"/Users/billgrace/Documents/Sites/avortx/classes/TrackType.php",
+		"/Users/billgrace/Documents/Sites/avortx/classes/User.php",
+		"/Users/billgrace/Documents/Sites/avortx/register.php",
+		"/Users/billgrace/Documents/Sites/avortx/script/foo.js",
+		"/Users/billgrace/Documents/Sites/avortx/classes/Validate.php",
+		"/Users/billgrace/Downloads/ajax-php-mysql-example/book-suggestion.php",
+		"/Users/billgrace/Downloads/ajax-php-mysql-example/ajax-php-mysql-user-interface.html",
+		"/Users/billgrace/Documents/Sites/avortx/request_handler.php",
+		"/Users/billgrace/Documents/Sites/avortx/changepassword.php",
+		"/Users/billgrace/Documents/Sites/avortx/classes/Config.php",
+		"/Users/billgrace/Documents/Sites/avortx/classes/Session.php",
+		"/Users/billgrace/Library/Application Support/Sublime Text 2/Packages/Print to HTML/Default (OSX).sublime-keymap",
+		"/Users/billgrace/Library/Application Support/Sublime Text 2/Packages/User/Distraction Free.sublime-settings",
+		"/Users/billgrace/Library/Application Support/Sublime Text 2/Packages/User/Preferences.sublime-settings",
+		"/Users/billgrace/Library/Application Support/Sublime Text 2/Packages/Default/Preferences.sublime-settings",
+		"/Users/billgrace/Library/Application Support/Sublime Text 2/Packages/User/JavaScript.sublime-settings",
+		"/Users/billgrace/Library/Application Support/Sublime Text 2/Packages/User/Print to HTML.sublime-settings",
+		"/Users/billgrace/Library/Application Support/Sublime Text 2/Packages/Print to HTML/Print to HTML.sublime-settings",
+		"/Users/billgrace/Documents/Sites/avortx/update.php",
+		"/Users/billgrace/Documents/Sites/avortx/classes/Cookie.php",
+		"/Users/billgrace/Documents/Sites/avortx/classes/Config.js",
+		"/Users/billgrace/Documents/Sites/avortx/login.php",
+		"/Users/billgrace/Documents/Sites/avortx/profile.php",
+		"/Users/billgrace/Documents/Sites/avortx/classes/Redirect.php",
+		"/Users/billgrace/Downloads/foo.php",
+		"/Users/billgrace/Downloads/foo.html",
+		"/Users/billgrace/Documents/Sites/avortx/logout.php",
+		"/Users/billgrace/Documents/Sites/avortx/core/init.php",
+		"/Users/billgrace/Documents/Sites/avortx/classes/Token.php",
+		"/Users/billgrace/Documents/Sites/avortx/includes/errors/404.php",
+		"/Users/billgrace/Documents/Sites/avortx/classes/Input.php",
+		"/Users/billgrace/Documents/Sites/avortx/functions/sanitize.php",
+		"/Users/billgrace/Documents/Sites/avortx/classes/Hash.php",
+		"/Users/billgrace/Documents/Sites/avortx/index.html",
+		"/Users/billgrace/Documents/Sites/avortx/a.php",
+		"/Library/Application Support/appsolute/MAMP PRO/conf/php.ini",
+		"/Users/billgrace/Documents/Sites/avortx/includes/index.php",
+		"/Users/billgrace/Documents/Sites/avortx/classes/Validation.php",
+		"/Users/billgrace/Documents/Sites/avortx/core/Config.php",
+		"/Users/billgrace/Documents/Sites/avortx/includes/update.php",
+		"/Users/billgrace/Documents/Sites/avortx/functions/init.php",
+		"/Users/billgrace/Documents/Sites/avortx/includes/register.php",
+		"/Users/billgrace/Documents/Sites/avortx/includes/profile.php",
+		"/Users/billgrace/Documents/Sites/avortx/includes/logout.php",
+		"/Users/billgrace/Documents/Sites/avortx/includes/login.php",
+		"/Users/billgrace/Documents/Sites/avortx/includes/changepassword.php",
+		"/Users/billgrace/Documents/Sites/rr/s.php",
+		"/Users/billgrace/Documents/Sites/rr/DesignLog.md",
+		"/Users/billgrace/Documents/Sites/rr/rt.html",
+		"/Users/billgrace/Documents/Sites/rr/script/controls.js",
+		"/Users/billgrace/Documents/Sites/rr/script/showVectors.js",
+		"/Users/billgrace/Documents/Sites/rr/sl.html",
+		"/Users/billgrace/Documents/Sites/rr/README.md",
+		"/Users/billgrace/projects/three.js-master-April2015/examples/webgl_buffergeometry_particles.html",
+		"/Users/billgrace/projects/three.js-master-April2015/examples/webgl_buffergeometry_lines.html",
+		"/Users/billgrace/projects/three.js-master-April2015/examples/webgl_interactive_particles.html",
+		"/Users/billgrace/Library/Application Support/Sublime Text 2/Packages/User/JSON.sublime-settings",
+		"/Users/billgrace/Documents/Sites/rr/shape/rrTrack.inc",
+		"/Users/billgrace/Documents/Sites/ih/cameras.js",
+		"/Users/billgrace/Documents/Sites/ih/eventHandlers.js",
+		"/Users/billgrace/Documents/Sites/ih/motion.js",
+		"/Users/billgrace/Documents/Sites/ih/players.js",
+		"/Users/billgrace/Documents/Sites/ih/terrain.js",
+		"/Users/billgrace/projects/RyanBedPad/FanBox.scad",
+		"/Users/billgrace/projects/RyanBedPad/FanLid.scad",
+		"/Users/billgrace/Documents/Sites/rr/script/ShowVectors.js",
+		"/Users/billgrace/Documents/Sites/rr/stl/rrTrack.scad",
+		"/Users/billgrace/Documents/Sites/rr/stl/rrTrack.inc",
+		"/Users/billgrace/Documents/Sites/rr/ShowVectors.js",
+		"/Users/billgrace/Documents/Sites/q/index copy 2.html",
+		"/Users/billgrace/Documents/Sites/rr/CannonDebugRenderer.js",
+		"/Users/billgrace/projects/three.js-master-April2015/examples/webgl_loader_stl.html",
+		"/Users/billgrace/Documents/Sites/f/index.html",
+		"/Users/billgrace/Documents/Sites/rr/stl/rrTrack.stl"
+	],
+	"find":
+	{
+		"height": 35.0
+	},
+	"find_in_files":
+	{
+		"height": 93.0,
+		"where_history":
+		[
+			"<open files>,<open folders>",
+			"<open files>",
+			"<open files>,<open folders>",
+			"<open files>",
+			"<open files>,/Users/billgrace/Documents/Sites",
+			"<open files>",
+			"/Users/billgrace/Documents/Sites/ih",
+			"/Users/billgrace/Documents/Sites/",
+			"/Users/billgrace/Documents/Sites/ih",
+			"/Users/billgrace/Documents/Sites",
+			"/Users/billgrace/Documents/Sites/*/index.html",
+			"/Users/billgrace/Documents/Sites",
+			"<open files>",
+			"/Users/billgrace/Documents/Sites/",
+			"\"/Users/billgrace/Documents/Sites/*.html\"",
+			"/Users/billgrace/Documents/Sites/*.html",
+			"/Users/billgrace/Documents/Sites/index",
+			"/Users/billgrace/Documents/Sites/",
+			"/Users/billgrace/Documents/Sites/index.html",
+			"/Users/billgrace/Documents/Sites/*.html",
+			"/Users/billgrace/Documents/Sites",
+			"",
+			"/Users/billgrace/Documents/Sites",
+			"<open folders>,/Users/billgrace/Documents/Sites",
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"background",
+			"div",
+			"'div'",
+			"stats",
+			"new stat",
+			"new three.stats",
+			"new three.orbit",
+			"new orbit",
+			"orbitcontrols",
+			"Controls",
+			"terrainQuaternions",
+			"terrainPositions",
+			"terrainpositions",
+			"old",
+			"trackAnimationRestartCallback",
+			"robotAnimationRestartCallback",
+			"restartTerrainAnimation",
+			"terrainAnimationRestartCallback",
+			"restartTerrainAnimation",
+			"terrainAnimationRestartCallback",
+			"restart",
+			"vehicleAnimationStepCallback",
+			"globalxaxisangle",
+			"orbit",
+			"renderingAnimationStepCallback",
+			"robotposition",
+			"physicsAnimationStepCallback",
+			"orb",
+			"robotControllerPanel",
+			"debug",
+			"initialize",
+			"control",
+			"restart",
+			"trackAnimationStepCallback",
+			"backgroundAnimationStepCallback",
+			"debug",
+			"debig",
+			"gravity",
+			"position",
+			"setfromaxis",
+			"joystickControl",
+			"hostelementid",
+			"stick",
+			"test",
+			"dragpoint",
+			"restart",
+			"activate",
+			"activate`",
+			"activate",
+			"hostElementId",
+			"allowSlidingOn",
+			"preserveAspect",
+			"heightPercent",
+			"widthPercent",
+			"topPercent",
+			"leftPercent",
+			"listbox",
+			"list",
+			"closeButtonText",
+			"itemClickedCallback",
+			"hostElementId",
+			"currentValue",
+			"topLimitValue",
+			"bottomLimitValue",
+			"trackColor",
+			"limitToLimitPercent",
+			"trackWidthPercent",
+			"sliderWidthPercent",
+			"topLimitPercent",
+			"horizontalCenterPercent",
+			"sliderImageFileName",
+			"hostElementId",
+			"valuerange",
+			"hostElementId",
+			"currentValue",
+			"rightLimitValue",
+			"leftLimitValue",
+			"trackColor",
+			"trackHeightPercent",
+			"sliderHeightPercent",
+			"limitToLimitPercent",
+			"verticalCenterPercent",
+			"leftLimitPercent",
+			"sliderImageFileName",
+			"image",
+			"heightPercent",
+			"widthPercent",
+			"topPercent",
+			"leftPercent",
+			"imageFileName",
+			"bordercolor",
+			"borderwidth",
+			"backgroundcolor",
+			"textsize",
+			"textcolor",
+			"heightPercent",
+			"widthPercent",
+			"topPercent",
+			"leftPercent",
+			"textbox",
+			"bordercolor",
+			"borderwidth",
+			"backgroundcolor",
+			"textsize",
+			"current",
+			"initialVerticalPosition",
+			"touchPointY",
+			"touchPointX",
+			"touchpoint",
+			"touchpointx",
+			"speedslider",
+			"z",
+			"control",
+			"speed",
+			"robotcontrollerpanel",
+			"imagebutton",
+			"additem",
+			"zindex",
+			"listPane",
+			"orbitcontrols",
+			"this",
+			"visible",
+			"disableor",
+			"carBodyInitialPosition",
+			"carBodyInitialVelocity",
+			"cylinderBodyInitialPosition",
+			"cylinderBodyInitialVelocity",
+			"sphereBodyInitialVelocity"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"terrainInitialQuaternions",
+			"terrainInitialPositions",
+			"knob",
+			"left",
+			"currentYValue",
+			"currentXValue",
+			"stick",
+			"function() { inst",
+			"listWindowDiv",
+			"carBody",
+			"cylinder",
+			"sphere",
+			"cylinder",
+			"sphere",
+			"sqrt",
+			"axisClue",
+			"GridLineCount",
+			"GridPixelSpacing",
+			"ShaftElevation",
+			"caster",
+			"kenny",
+			"KennyRobotOne",
+			"topCapFaceIndex",
+			" cylinderDiameter",
+			"cylinderRadius",
+			"mesh.geometry",
+			"blueBalloon",
+			"beach",
+			"winged",
+			"flyingCardboard",
+			"current",
+			"chooseButton",
+			"toBeAdded",
+			"choose",
+			"currentTrackType.slope_match_angle",
+			"parseFloat",
+			"trackSection",
+			"startingDirection",
+			"tlButton",
+			"ttButton",
+			"textField",
+			"buttonPanel",
+			"dragPoint",
+			"current",
+			"currentTrackLayoutSections",
+			"section_type",
+			"trackPieceBodyList",
+			"trackPieceMeshList",
+			"trackSmallPieces",
+			"trackLayoutSections",
+			"Background",
+			"background",
+			"TrackPathPoint",
+			"VisibleTrackPoints",
+			"currentPieceRadius",
+			"currentPieceAngle",
+			"next",
+			"current",
+			"]",
+			"[",
+			"finish",
+			"middle",
+			"vertex",
+			")",
+			"new THREE.Vector3(",
+			"world.addBody(",
+			"ToggleAxes",
+			"ToggleCannon",
+			"shovel",
+			"panelSelect",
+			"panelTitle",
+			"panelCloseButton",
+			"panelBar",
+			"panel",
+			"shovel",
+			"VerticalMargin",
+			"Arrows",
+			"This button chooses",
+			"ClosePanelButton",
+			"ClosePanel",
+			"Robot",
+			"robot",
+			"Point-of-view mode is set to",
+			"Track",
+			"Orbit",
+			"InVehicle",
+			"Follow",
+			"Select",
+			"SelectAerial",
+			"Select",
+			"Title",
+			"Bar",
+			"InVehicle",
+			"inOut",
+			"upDownLeftRight",
+			"cannon",
+			"cameraInVehicleDisplacement",
+			"cameraTetherLength",
+			"vehicle",
+			"Positioning",
+			"Outside",
+			"horizon",
+			"style.",
+			"",
+			"lower",
+			"Right",
+			"optional",
+			"visibility = \"visible\"",
+			"visibility = \"hidden\"",
+			"startScale",
+			"selection",
+			"ground",
+			"terrainSectionPixelLength",
+			"terrainSectionPixelWidth",
+			"terrainSection",
+			"rendererDomElement",
+			"Offset",
+			"Torso",
+			"Hat",
+			"Hair",
+			"geometry",
+			"Phong",
+			"Geometry",
+			"playerGallery",
+			"editPlayer",
+			"fetchSelfButtonClickHandler",
+			"case gameScreens.",
+			"launch"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": false
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		},
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 34.0
+	},
+	"input":
+	{
+		"height": 31.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			],
+			[
+				1,
+				0,
+				2,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			0.5,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 100.0
+	},
+	"replace":
+	{
+		"height": 64.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"show_minimap": true,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 213.0,
+	"status_bar_visible": true
+}

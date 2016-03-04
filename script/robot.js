@@ -4,6 +4,17 @@ Select and specify a variety of robots
 
 */
 
+var needToshowRobotListWhenAvailable = false;
+
+var pauseButton, playButton, restartAnimationButton;
+
+var robotBody, robotMesh;
+var visibleRobotBodyOrientationVector;
+
+var robotControllerPanel;
+var leftJoyStick, rightJoyStick;
+var brakeButton;
+
 var currentRobotMesh;
 
 var robotBody;
@@ -24,7 +35,10 @@ var robotTrackMaterialContactEquation;
 
 var currentRobotMotiveMode;
 
-function initializeRobots() {
+function initializeRobot() {
+	animationStepCallbackList.push('robotAnimationStepCallback');
+	animationRestartCallbackList.push('robotAnimationRestartCallback');
+	initializeRobotControllerPanel();
 	// create the one and only robot physics body: a small (1 mm radius) sphere which occupies the center of all robots.
 	// this is an individual physics entity on which all forces act during animation.
 	robotBodyMaterial = new CANNON.Material( 'robotBodyMaterial' );
@@ -49,12 +63,113 @@ function initializeRobots() {
 		} );
 	enableDragPointSpring();
 
-	// create a contact material to allow the robot body material to respond to the track material
-	robotTrackMaterialContactEquation = new CANNON.ContactMaterial( robotBodyMaterial, trackBodyMaterial, { friction: 0, restitution: 0.0 } );
-	world.addContactMaterial( robotTrackMaterialContactEquation );
+	// // create a contact material to allow the robot body material to respond to the track material
+	// robotTrackMaterialContactEquation = new CANNON.ContactMaterial( robotBodyMaterial, trackBodyMaterial, { friction: 0, restitution: 0.0 } );
+	// world.addContactMaterial( robotTrackMaterialContactEquation );
 
 	// create array of robot definitions
 	robotObjectList = [];
+	// --- a caster
+	var casterWheelRadius = 5;
+
+	// narrower for LTMouseWheel.jpg
+	// var casterWheelWidth = 4;
+	var casterWheelWidth = 1;
+
+	var casterWheelNumberOfCircumferenceSegments = 16;
+	var casterPlatformLength = 25;
+	var casterPlatformThickness = 2;
+	var casterPlatformWidth = 10;
+	var casterPaintColor = 0x907050;
+	var casterBracketMaterial = new THREE.MeshLambertMaterial( { color:casterPaintColor } );
+	var casterBracketThickness = 0.5;
+	var casterBracketWidth = casterWheelWidth + 2;
+	var casterBracketLength = 5;
+	var casterBracketBendMargin = 1;
+	var casterBracketHubRadius = 1.5;
+	var casterBracketShaftElevation = 10;
+	var casterShaftRadius = 0.5;
+	var casterObject = new Object();
+	casterObject.name = 'Caster';
+	casterObject.motiveMode = 'trackDragPoint';
+	// ---- the plain rectangular platform underneath which the caster is fixed
+	var casterPlatformMesh = new THREE.Mesh( new THREE.BoxGeometry(casterPlatformLength, casterPlatformThickness, casterPlatformWidth),
+												new THREE.MeshLambertMaterial( { color:0x50c050 } ) );
+	// ---- a square "U" bracket to which the caster axle attaches
+	// ----- the rectangular base piece of the U where the caster bracket is screwed into the bottom of the platform
+	var casterBracketBaseMesh = new THREE.Mesh( new THREE.BoxGeometry( casterBracketLength, casterBracketThickness, casterBracketWidth ), casterBracketMaterial );
+	casterPlatformMesh.add( casterBracketBaseMesh );
+	casterBracketBaseMesh.position.set( 0, -( casterPlatformThickness / 2 ), 0 );
+	// ----- the geometry for each of the two sides of the U (not including the cylinder "hub" where the axle passes through)
+	var casterBracketSideShape = new THREE.Shape();
+	casterBracketSideShape.moveTo( ( casterBracketLength / 2 ), 0 );
+	casterBracketSideShape.lineTo( ( casterBracketLength / 2 ), -casterBracketBendMargin );
+	// casterBracketSideShape.lineTo( ( ( casterBracketLength / 2 ) - casterBracketHubRadius ), -casterBracketShaftElevation );
+	// casterBracketSideShape.lineTo( -( ( casterBracketLength / 2 ) - casterBracketHubRadius ), -casterBracketShaftElevation );
+	casterBracketSideShape.lineTo( casterBracketHubRadius, -casterBracketShaftElevation );
+	casterBracketSideShape.lineTo( -casterBracketHubRadius, -casterBracketShaftElevation );
+	casterBracketSideShape.lineTo( -( casterBracketLength / 2 ), -casterBracketBendMargin );
+	casterBracketSideShape.lineTo( -( casterBracketLength / 2 ), 0 );
+	casterBracketSideShape.lineTo( ( casterBracketLength / 2 ), 0 );
+	var casterBracketSideGeometry = new THREE.ExtrudeGeometry( casterBracketSideShape, { amount:casterBracketThickness, bevelEnabled:false } );
+	// ------ the left side of the bracket
+	var casterBracketLeftSideMesh = new THREE.Mesh( casterBracketSideGeometry, casterBracketMaterial );
+	casterBracketBaseMesh.add( casterBracketLeftSideMesh );
+	casterBracketLeftSideMesh.position.set( 0, 0, -( casterBracketWidth / 2 ) );
+	// ------ the right side of the bracket
+	var casterBracketRightSideMesh = new THREE.Mesh( casterBracketSideGeometry, casterBracketMaterial );
+	casterBracketBaseMesh.add( casterBracketRightSideMesh );
+	casterBracketRightSideMesh.position.set( 0, 0, ( ( casterBracketWidth / 2 ) - casterBracketThickness ) );
+	// ------ the shaft hubs
+	var casterBracketLeftHubMesh = new THREE.Mesh( new THREE.CylinderGeometry( casterBracketHubRadius, casterBracketHubRadius, casterBracketThickness, 16 ), casterBracketMaterial );
+	casterBracketBaseMesh.add( casterBracketLeftHubMesh );
+	casterBracketLeftHubMesh.rotation.x = Math.PI / 2;
+	casterBracketLeftHubMesh.position.set( 0, -casterBracketShaftElevation, -( ( casterBracketWidth / 2 ) - ( casterBracketThickness / 2 ) ) );
+	var casterBracketRightHubMesh = new THREE.Mesh( new THREE.CylinderGeometry( casterBracketHubRadius, casterBracketHubRadius, casterBracketThickness, 16 ), casterBracketMaterial );
+	casterBracketBaseMesh.add( casterBracketRightHubMesh );
+	casterBracketRightHubMesh.rotation.x = Math.PI / 2;
+	casterBracketRightHubMesh.position.set( 0, -casterBracketShaftElevation, ( ( casterBracketWidth / 2 ) - ( casterBracketThickness / 2 ) ) );
+	// ----- the caster axle shaft
+	var casterShaftMesh = new THREE.Mesh( new THREE.CylinderGeometry( casterShaftRadius, casterShaftRadius, casterBracketWidth + 1, 16 ),
+											new THREE.MeshPhongMaterial( { color:0x444444, specular:0xdddddd, metal:true } ) );
+	casterShaftMesh.rotation.x = Math.PI / 2;
+	casterBracketBaseMesh.add( casterShaftMesh );
+	casterShaftMesh.position.set( 0, -casterBracketShaftElevation, 0 );
+	// ---- the caster wheel
+	// // - three images map to the 'tread' and 'sidewalls'
+	// var casterWheelCircumferenceMaterial = new THREE.MeshLambertMaterial( { side:THREE.DoubleSide, map:THREE.ImageUtils.loadTexture( 'image/parts/makerbotFilamentReelSide.jpg' ) } );
+	// var casterWheelRightSideMaterial = new THREE.MeshLambertMaterial( { side:THREE.DoubleSide, map:THREE.ImageUtils.loadTexture( 'image/parts/makerbotFilamentReelFront.jpg' ) } );
+	// var casterWheelLeftSideMaterial = new THREE.MeshLambertMaterial( { side:THREE.DoubleSide, map:THREE.ImageUtils.loadTexture( 'image/parts/makerbotFilamentReelBack.jpg' ) } );
+	// var casterWheelMaterialArray = [];
+	// casterWheelMaterialArray.push( casterWheelCircumferenceMaterial );
+	// casterWheelMaterialArray.push( casterWheelRightSideMaterial );
+	// casterWheelMaterialArray.push( casterWheelLeftSideMaterial );
+	// var casterWheelMaterial = new THREE.MeshFaceMaterial( casterWheelMaterialArray );
+	// var casterWheelGeometry = new THREE.CylinderGeometry( casterWheelRadius, casterWheelRadius, casterWheelWidth, casterWheelNumberOfCircumferenceSegments );
+	// var casterWheelMesh = new THREE.Mesh( casterWheelGeometry, casterWheelMaterial );
+	// cylinderMeshUvForEndCapImages( casterWheelMesh, 3 );
+
+	// - new version of wheel using picture of Elenco line tracking mouse wheel
+	var casterWheelCircumferenceMaterial = new THREE.MeshLambertMaterial( { color:0x000000 } );
+	var casterWheelSideMaterial = new THREE.MeshLambertMaterial( { side:THREE.DoubleSide, map:THREE.ImageUtils.loadTexture( 'image/parts/LTMouseWheel.jpg' ) } );
+	var casterWheelMaterialArray = [];
+	casterWheelMaterialArray.push( casterWheelCircumferenceMaterial );
+	casterWheelMaterialArray.push( casterWheelSideMaterial );
+	var casterWheelMaterial = new THREE.MeshFaceMaterial( casterWheelMaterialArray );
+	var casterWheelGeometry = new THREE.CylinderGeometry( casterWheelRadius, casterWheelRadius, casterWheelWidth, casterWheelNumberOfCircumferenceSegments );
+	var casterWheelMesh = new THREE.Mesh( casterWheelGeometry, casterWheelMaterial );
+	cylinderMeshUvForEndCapImages( casterWheelMesh, 2 );
+
+
+	casterWheelMesh.rollingRadius = casterWheelRadius;
+	casterShaftMesh.add( casterWheelMesh );
+	// Now add the above collection to the robot list
+	casterObject.mesh = casterPlatformMesh;
+	casterObject.meshBoundingRadius = 20;
+	casterObject.centerHeight = casterWheelRadius + casterBracketShaftElevation + ( casterPlatformThickness / 2 );
+	casterObject.stepAnimationCallback = casterMeshAnimate;
+	robotObjectList.push( casterObject );
+	// a blue ball spring-attached to the drag point
 	var blueBalloonObject = new Object();
 	blueBalloonObject.name = 'Blue balloon';
 	blueBalloonObject.motiveMode = 'dragPointSpring';
@@ -64,21 +179,23 @@ function initializeRobots() {
 	blueBalloonObject.centerHeight = 10;
 	blueBalloonObject.stepAnimationCallback = blueBalloonMeshAnimate;
 	robotObjectList.push( blueBalloonObject );
+	// a beach ball rolling behind the drag point
 	var beachBallObject = new Object();
 	beachBallObject.name = 'Beach ball';
 	beachBallObject.motiveMode = 'trackDragPoint';
-	var beachBallMesh = new THREE.Mesh( new THREE.SphereGeometry( 10 ), new THREE.MeshLambertMaterial( { map:THREE.ImageUtils.loadTexture( 'image/beachBallStripes.png' ) } ) );
+	var beachBallMesh = new THREE.Mesh( new THREE.SphereGeometry( 10 ), new THREE.MeshLambertMaterial( { map:THREE.ImageUtils.loadTexture( 'image/parts/beachBallStripes.png' ) } ) );
 	beachBallObject.mesh = beachBallMesh;
 	beachBallObject.meshBoundingRadius = 10;
 	beachBallObject.centerHeight = 10;
 	beachBallObject.stepAnimationCallback = beachBallMeshAnimate;
 	robotObjectList.push( beachBallObject );
+	// a bizarrely colored wheel to try out rolling cylinder operation
 	var lonelyWheelObject = new Object();
 	lonelyWheelObject.name = 'Lonely wheel';
 	lonelyWheelObject.motiveMode = 'trackDragPoint';
 	var lonelyHubMesh = new THREE.Mesh( new THREE.SphereGeometry( 1 ), new THREE.MeshBasicMaterial() );
 	var lonelyWheelMesh = new THREE.Mesh( new THREE.CylinderGeometry( 10, 10, 8, 8 ),
-		new THREE.MeshLambertMaterial( { side:THREE.DoubleSide, map:THREE.ImageUtils.loadTexture( 'image/cylinderTireImage.png' ) } ) );
+		new THREE.MeshLambertMaterial( { side:THREE.DoubleSide, map:THREE.ImageUtils.loadTexture( 'image/parts/cylinderTireImage.png' ) } ) );
 	// old--lonelyWheelObject.mesh = lonelyWheelMesh;
 	lonelyWheelObject.mesh = lonelyHubMesh;
 	lonelyHubMesh.add( lonelyWheelMesh );
@@ -87,6 +204,7 @@ function initializeRobots() {
 	lonelyWheelMesh.rotateOnAxis( new THREE.Vector3( 1, 0, 0 ), Math.PI / 2 );
 	lonelyWheelObject.stepAnimationCallback = lonelyWheelMeshAnimate;
 	robotObjectList.push( lonelyWheelObject );
+	// a flat piece of "cardboard" "flying" behind the drag point
 	var flyingCardboardObject = new Object();
 	flyingCardboardObject.name = 'Flying cardboard';
 	flyingCardboardObject.motiveMode = 'trackDragPoint';
@@ -96,6 +214,7 @@ function initializeRobots() {
 	flyingCardboardObject.centerHeight = 10.0;
 	flyingCardboardObject.stepAnimationCallback = flyingCardboardMeshAnimate;
 	robotObjectList.push( flyingCardboardObject );
+	// a piece of cardboard with "wings" that flap
 	var wingedCardboardObject = new Object();
 	wingedCardboardObject.name = 'Winged cardboard';
 	wingedCardboardObject.motiveMode = 'trackDragPoint';
@@ -111,6 +230,7 @@ function initializeRobots() {
 	wingedCardboardObject.centerHeight = 10.0;
 	wingedCardboardObject.stepAnimationCallback = wingedCardboardMeshAnimate;
 	robotObjectList.push( wingedCardboardObject );
+	// a flying rectangle  trying to look like a sketch by Kenny in 1-3 grades
 	var kennyRobotOneObject = new Object();
 	kennyRobotOneObject.name = 'kenny Robot One';
 	kennyRobotOneObject.motiveMode = 'trackDragPoint';
@@ -128,6 +248,152 @@ function initializeRobots() {
 	robotObjectList.push( kennyRobotOneObject );
 
 	currentRobotIndex = 0;
+}
+
+function robotAnimationStepCallback() {
+	if( needToshowRobotListWhenAvailable ) {
+		// if( !backgroundAjaxExchangePending ) {
+			needToshowRobotListWhenAvailable = false;
+			makeRobotListBox();
+		// }
+	}
+	pollRobotControls();
+}
+
+function robotAnimationRestartCallback(){
+	// robotBody.position.copy( currentTrackLayoutStartingPoint );
+	// robotBody.position.y += currentTrackType.width / 3;
+}
+
+function pauseBarClickCallback() {
+	if( animationPaused ) {
+		// animation is already paused so restart it
+		playButton.deactivate();
+		pauseButton.activate();
+		animationPaused = false;
+	} else {
+		// pause the animation
+		pauseButton.deactivate();
+		playButton.activate();
+		animationPaused = true;
+	}
+}
+
+function brakeButtonClickedCallback() {
+	vehicleInstantStop();
+}
+
+function initializeRobotControllerPanel(){
+	// Controller panel
+	robotControllerPanel = new robotControllerPanel( '0%', '0px', '100%', '25%' );
+	robotControllerPanel.activate();
+
+	// Pause/play button
+	var pausePlayLeftPercent = 0.45;
+	var pausePlayTopPercent = 0.6;
+	var pausePlayWidthPercent = 0.1;
+	var pausePlayHeightPercent = 0.4;
+	pauseButton = new imageButton({
+		imageFileName:'image/controls/pauseBars.png',
+		leftPercent:pausePlayLeftPercent,
+		topPercent:pausePlayTopPercent,
+		widthPercent:pausePlayWidthPercent,
+		heightPercent:pausePlayHeightPercent,
+		preserveApect:'x',
+		allowSlidingOn:false,
+		clickedCallback:pauseBarClickCallback,
+		hostElementId:'robotControllerPanel'
+	});
+	playButton = new imageButton({
+		imageFileName:'image/controls/playWedge.png',
+		leftPercent:pausePlayLeftPercent,
+		topPercent:pausePlayTopPercent,
+		widthPercent:pausePlayWidthPercent,
+		heightPercent:pausePlayHeightPercent,
+		preserveApect:'x',
+		allowSlidingOn:false,
+		clickedCallback:pauseBarClickCallback,
+		hostElementId:'robotControllerPanel'
+	});
+	pauseButton.activate();
+	animationPaused = false;
+
+	// RestartAnimation button
+	restartAnimationButton = new imageButton({
+		imageFileName:'image/controls/restartAnimationArrow.png',
+		leftPercent:pausePlayLeftPercent,
+		topPercent:0.0,
+		widthPercent:pausePlayWidthPercent,
+		heightPercent:pausePlayHeightPercent,
+		preserveApect:'x',
+		allowSlidingOn:false,
+		clickedCallback:restartAnimation,
+		hostElementId:'robotControllerPanel'
+	});
+	restartAnimationButton.activate();
+
+	// brake ('STOP') button
+	brakeButton = new imageButton({
+		imageFileName: 'image/controls/stopSign.png',
+		leftPercent: 0.7,
+		topPercent: 0.35,
+		widthPercent: 0.3,
+		heightPercent: 0.3,
+		preserveApect: 'W',
+		allowSlidingOn: true,
+		clickedCallback: brakeButtonClickedCallback,
+		hostElementId: 'robotControllerPanel'
+	});
+	brakeButton.activate();
+
+	// Joy sticks
+	leftJoyStick = new joyStick(
+		{
+		hostElementId:'robotControllerPanel',
+		controlLeftPercent:0.0,
+		controlTopPercent:0.0,
+		controlWidthPercent:0.35,
+		controlHeightPercent:1.0,
+		stickWidthPercent:0.25,
+		stickHeightPercent:0.25,
+		preserveAspect:false,
+		allowSlidingOn:true,
+		initialHorizontalPosition:0.5,
+		initialVerticalPosition:0.5
+		}
+	);
+	leftJoyStick.activate();
+/* drop the right joystick for now (Feb 11, '16)
+	rightJoyStick = new joyStick(
+		{
+		hostElementId:'robotControllerPanel',
+		controlLeftPercent:0.65,
+		controlTopPercent:0.0,
+		controlWidthPercent:0.35,
+		controlHeightPercent:1.0,
+		stickWidthPercent:0.25,
+		stickHeightPercent:0.25,
+		preserveAspect:false,
+		allowSlidingOn:true,
+		initialHorizontalPosition:0.5,
+		initialVerticalPosition:0.5
+		}
+	);
+	rightJoyStick.activate();
+*/
+}
+
+function pollRobotControls() {
+	if( leftJoyStick.buttonDown ) {
+		// While the left joystick is being pressed, continuously apply speed and direction inputs to the vehicle
+		currentSteeringValue = ( 0.5 - leftJoyStick.currentXValue ) * fullSteeringValue;
+		currentEngineForceValue = ( leftJoyStick.currentYValue - 0.5 ) * fullEngineForceValue;
+		// currentEngineForceValue = ( 0.5 - leftJoyStick.currentYValue ) * fullEngineForceValue;
+		carVehicle.applyEngineForce(currentEngineForceValue, rightRearWheelIndex);
+		carVehicle.applyEngineForce(currentEngineForceValue, leftRearWheelIndex);
+		carVehicle.setSteeringValue(currentSteeringValue, rightFrontWheelIndex);
+		carVehicle.setSteeringValue(currentSteeringValue, leftFrontWheelIndex);
+	}
 }
 
 function enableDragPointSpring() {
@@ -159,7 +425,9 @@ function chooseRobot() {
 
 //  2) put the list into the screen the user can see it
 function makeRobotListBox() {
-	globalListBox = new listBox( selectRobotItemClickedCallback );
+	globalListBox = new listBox({
+		itemClickedCallback:selectRobotItemClickedCallback
+	});
 	for( var i = 0; i < robotObjectList.length; i++ ) {
 		globalListBox.addItem( robotObjectList[ i ].name, i )
 	}
@@ -216,25 +484,51 @@ function animateRobotAssembly() {
 	robotObjectList[ currentRobotIndex ].stepAnimationCallback();
 }
 
-function animateMeshDragPointRolling( meshToRoll ) {
+function animateMeshDragPointRolling( meshToRoll, meshRadius, rollingAxis ) {
 	var pitchRotationAngleAtLastPoint, pitchRotationAngleForThisStep, newPitchRotationAngle;
 	// we want the mesh to roll along the track so...
 	//	(... note that "rolling forward" is a matter of increasingly negative pitch angle...)
 	// 1) save the previous mesh-centric rolling rotation angle
 	// old--pitchRotationAngleAtLastPoint = robotObjectList[ currentRobotIndex ].mesh.rotation.z;
-	pitchRotationAngleAtLastPoint = meshToRoll.rotation.z;
+	switch( rollingAxis ) {
+		case 'x':
+			pitchRotationAngleAtLastPoint = meshToRoll.rotation.x;
+			break;
+		case 'y':
+			pitchRotationAngleAtLastPoint = meshToRoll.rotation.y;
+			break;
+		case 'z':
+			pitchRotationAngleAtLastPoint = meshToRoll.rotation.z;
+			break;
+		default:
+			alert('hit default in switch in animateMeshDragPointRolling');
+			break;
+	}
 	// 2) orient the (un-rotated) mesh to the current track small piece's orientation and then
 	// old--robotObjectList[ currentRobotIndex ].mesh.rotation.copy( trackSmallPieces[ offsetDragPointIndex() ].orientationEuler );
 	meshToRoll.rotation.copy( trackSmallPieces[ offsetDragPointIndex() ].orientationEuler );
 	// 3) take the distance moved along the track and rotate the mesh to match the mesh's circumference arc to that distance
 	// old--pitchRotationAngleForThisStep = -( dragPointLastStepDistance / robotObjectList[ currentRobotIndex ].mesh.geometry.boundingSphere.radius );
-	pitchRotationAngleForThisStep = -( dragPointLastStepDistance / meshToRoll.geometry.boundingSphere.radius );
+	pitchRotationAngleForThisStep = -( dragPointLastStepDistance / meshRadius );
 	newPitchRotationAngle = pitchRotationAngleAtLastPoint + pitchRotationAngleForThisStep;
 	while( newPitchRotationAngle < ( -2 * Math.PI ) ) {
 		newPitchRotationAngle += ( 2 * Math.PI );
 	}
 	// old--robotObjectList[ currentRobotIndex ].mesh.rotation.z += newPitchRotationAngle;
-	meshToRoll.rotation.z += newPitchRotationAngle;
+	switch( rollingAxis ) {
+		case 'x':
+			meshToRoll.rotation.x += newPitchRotationAngle;
+			break;
+		case 'y':
+			meshToRoll.rotation.y += newPitchRotationAngle;
+			break;
+		case 'z':
+			meshToRoll.rotation.z += newPitchRotationAngle;
+			break;
+		default:
+			alert('hit default in switch2 in animateMeshDragPointRolling');
+			break;
+	}
 }
 
 function animateMeshDragPointTracking( meshToDrag ) {
@@ -242,17 +536,23 @@ function animateMeshDragPointTracking( meshToDrag ) {
 	meshToDrag.rotation.copy( trackSmallPieces[ offsetDragPointIndex() ].orientationEuler );
 }
 
+function casterMeshAnimate() {
+	animateMeshDragPointTracking( robotObjectList[ currentRobotIndex ].mesh );
+	var wheelMesh = robotObjectList[ currentRobotIndex ].mesh.children[ 0 ].children[ 4 ].children[ 0 ];
+	animateMeshDragPointRolling( wheelMesh, wheelMesh.rollingRadius, 'y' );
+}
+
 function blueBalloonMeshAnimate() {
 }
 
 function beachBallMeshAnimate() {
 	// animateMeshDragPointRolling( beachBallMesh );
-	animateMeshDragPointRolling( robotObjectList[ currentRobotIndex ].mesh );
+	animateMeshDragPointRolling( robotObjectList[ currentRobotIndex ].mesh, 10, 'z' );
 }
 
 function lonelyWheelMeshAnimate() {
 	// animateMeshDragPointRolling( lonelyWheelMesh );
-	animateMeshDragPointRolling( robotObjectList[ currentRobotIndex ].mesh );
+	animateMeshDragPointRolling( robotObjectList[ currentRobotIndex ].mesh, 10, 'z' );
 }
 
 function flyingCardboardMeshAnimate() {

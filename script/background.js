@@ -14,25 +14,54 @@
 //  The camera is looking at the "south" wall (face 6 in the loading order).
 //  Loading order for box faces is west, east, sky, ground, north, south.
 
+var needToshowBackgroundListWhenAvailable = false;
+
 var backgroundListOfNamesAndIds = [];
 var backgroundCubeGeometry, backgroundCubeMaterial, backgroundCubeMesh;
 var backgroundCubeMaterialArray = [];
 
-//add this for images on cylinder endcaps
 var backgroundCylinderGeometry, backgroundCylinderMaterial, backgroundCylinderMesh;
 var backgroundCylinderMaterialArray = [];
-//add this for images on cylinder endcaps
-
-//remove this for images on cylinder endcaps
-// var backgroundCylinderWallGeometry, backgroundCylinderWallMaterial, backgroundCylinderWallMesh; 
-// var backgroundCylinderTopGeometry, backgroundCylinderTopMaterial, backgroundCylinderTopMesh;
-// var backgroundCylinderBottomGeometry, backgroundCylinderBottomMaterial, backgroundCylinderBottomMesh;
-//remove this for images on cylinder endcaps
 
 var backgroundAjaxExchangePending = false;
 var backgroundAjaxFunctionSent;
 
 var currentBackground = new Object();
+
+function initializeBackground() {
+	animationStepCallbackList.push('backgroundAnimationStepCallback');
+	animationRestartCallbackList.push('backgroundAnimationRestartCallback');
+	// Fill in the current background object with plausible values
+	currentBackground.db_id = 1;
+	currentBackground.background_name = 'Initial Background';
+	currentBackground.author_name = 'A. Nonymous';
+	currentBackground.shape_type = 'cube';
+	currentBackground.shape_parameter_1 = 1000;
+	currentBackground.shape_parameter_2 = 1000;
+	currentBackground.shape_parameter_3 = 1000;
+	currentBackground.shape_parameter_4 = 0;
+	currentBackground.shape_parameter_5 = 0;
+	currentBackground.shape_parameter_6 = 0;
+	currentBackground.auto_locate_flag = 0;
+	currentBackground.image_filename_1 = '!ff0000';
+	currentBackground.image_filename_2 = '!00ff00';
+	currentBackground.image_filename_3 = '!0000ff';
+	currentBackground.image_filename_4 = '!ffff00';
+	currentBackground.image_filename_5 = '!ff00ff';
+	currentBackground.image_filename_6 = '!00ffff';
+}
+
+function backgroundAnimationStepCallback(){
+	if( needToshowBackgroundListWhenAvailable ) {
+		if( !backgroundAjaxExchangePending ) {
+			needToshowBackgroundListWhenAvailable = false;
+			makeBackgroundListBox();
+		}
+	}
+}
+
+function backgroundAnimationRestartCallback(){
+}
 
 function backgroundAjaxCallback() {
 	switch( backgroundAjaxFunctionSent ) {
@@ -90,9 +119,11 @@ function chooseBackground() {
 //  2) put the list onto the screen where the user can see it
 function makeBackgroundListBox() {
 	emptyGlobalListBox();
-	globalListBox = new listBox( selectBackgroundItemClickedCallback );
+	globalListBox = new listBox({
+		itemClickedCallback:selectBackgroundItemClickedCallback
+	});
 	for( var i = 0; i < backgroundListOfNamesAndIds.length; i++ ) {
-		globalListBox.addItem( backgroundListOfNamesAndIds[ i ][ 'background_name' ], parseInt( backgroundListOfNamesAndIds[ i ][ 'db_id' ] ) )
+		globalListBox.addItem( backgroundListOfNamesAndIds[ i ][ 'background_name' ], parseInt( backgroundListOfNamesAndIds[ i ][ 'db_id' ] ) );
 	}
 }
 
@@ -118,27 +149,6 @@ function removeBackground( dbId ) {
 	ajaxExchange( backgroundAjaxFunctionSent, dbId, 0, backgroundAjaxCallback );
 }
 
-function initializeBackground() {
-	// Fill in the current background object with plausible values
-	currentBackground.db_id = 1;
-	currentBackground.background_name = 'Initial Background';
-	currentBackground.author_name = 'A. Nonymous';
-	currentBackground.shape_type = 'cube';
-	currentBackground.shape_parameter_1 = 1000;
-	currentBackground.shape_parameter_2 = 1000;
-	currentBackground.shape_parameter_3 = 1000;
-	currentBackground.shape_parameter_4 = 0;
-	currentBackground.shape_parameter_5 = 0;
-	currentBackground.shape_parameter_6 = 0;
-	currentBackground.auto_locate_flag = 0;
-	currentBackground.image_filename_1 = '!ff0000';
-	currentBackground.image_filename_2 = '!00ff00';
-	currentBackground.image_filename_3 = '!0000ff';
-	currentBackground.image_filename_4 = '!ffff00';
-	currentBackground.image_filename_5 = '!ff00ff';
-	currentBackground.image_filename_6 = '!00ffff';
-}
-
 function pushACubeBackgroundMaterial( backgroundImageFileName ) {
 	if( backgroundImageFileName.charAt( 0 ) == "!" )
 	{
@@ -149,7 +159,6 @@ function pushACubeBackgroundMaterial( backgroundImageFileName ) {
 	}
 }
 
-//add this for images on cylinder endcaps
 function pushACylinderBackgroundMaterial( backgroundImageFileName ) {
 	if( backgroundImageFileName.charAt( 0 ) == "!" )
 	{
@@ -159,7 +168,6 @@ function pushACylinderBackgroundMaterial( backgroundImageFileName ) {
 		backgroundCylinderMaterialArray.push( new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( backgroundImageFileName ), side:THREE.DoubleSide } ) );
 	}
 }
-//add this for images on cylinder endcaps
 
 
 function setACylinderBackgroundMaterial( backgroundImageFileName, whichPart ) {
@@ -218,7 +226,6 @@ function setBackgroundPosition() {
 		}
 	} else {
 
-//add this for images on cylinder endcaps
 		// A cylinder background is a single mesh with a single position
 		if( currentBackground.auto_locate_flag != 0 ) {
 			// For auto location, center the cylinder horizontally and place its bottom surface
@@ -233,37 +240,6 @@ function setBackgroundPosition() {
 				currentBackground.shape_parameter_6
 			);
 		}
-//add this for images on cylinder endcaps
-
-//remove this for images on cylinder endcaps
-		// // A cylinder background is three meshes that need to be positioned
-		// if( currentBackground.auto_locate_flag != 0 ) {
-		// 	// For auto location, center the cylinder and top/bottom planes horizontally and set their vertical
-		// 	//  positions such that the bottom plane is one track thickness below zero and the bottom of
-		// 	//  the cylinder is one millimeter below that.
-		// 	var cylinderBackgroundY = ( currentBackground.shape_parameter_2 / 2 ) - currentTrackType.thickness - 1;
-		// 	backgroundCylinderWallMesh.position.set( 0, cylinderBackgroundY, 0 );
-		// } else {
-		// 	// No auto location so place the cylinder according to the supplied configuration and
-		// 	//  then locate the top plane and bottom plane so they're just covering the ends of the cylinder
-		// 	//  (.... "just covering" meaning 1 millimeter separation )
-		// 	backgroundCylinderWallMesh.position.set(
-		// 		currentBackground.shape_parameter_4,
-		// 		currentBackground.shape_parameter_5,
-		// 		currentBackground.shape_parameter_6
-		// 	);
-		// }
-		// // copy the cylinder's (center) position to those of the (centers of the) planes and then shift the planes
-		// //  vertically by half the cylinder's height less one millimeter
-		// backgroundCylinderTopMesh.rotation.set( -Math.PI / 2, 0, 0 );
-		// backgroundCylinderBottomMesh.rotation.set( -Math.PI / 2, 0, 0 );
-		// backgroundCylinderTopMesh.position.copy( backgroundCylinderWallMesh.position );
-		// backgroundCylinderBottomMesh.position.copy( backgroundCylinderWallMesh.position );
-		// backgroundCylinderTopMesh.position.y += ( ( currentBackground.shape_parameter_2 / 2 ) - 1);
-		// backgroundCylinderBottomMesh.position.y -= ( ( currentBackground.shape_parameter_2 / 2 ) - 1);
-//remove this for images on cylinder endcaps
-
-
 	}
 }
 
@@ -271,15 +247,7 @@ function installBackground() {
 	// Remove any previous background meshes from the rendering scene
 	scene.remove( backgroundCubeMesh );
 
-//remove this for images on cylinder endcaps
-	// scene.remove( backgroundCylinderWallMesh );
-	// scene.remove( backgroundCylinderTopMesh );
-	// scene.remove( backgroundCylinderBottomMesh );
-//remove this for images on cylinder endcaps
-//add this for images on cylinder endcaps
 	scene.remove( backgroundCylinderMesh );
-//add this for images on cylinder endcaps
-
 
 	// Now assemble the new background mesh
 	if( currentBackground.shape_type == 'cube' ) {
@@ -308,8 +276,6 @@ function installBackground() {
 		scene.add( backgroundCubeMesh );
 	} else if( currentBackground.shape_type == 'cylinder' ) {
 
-
-//add this for images on cylinder endcaps
 		// Before installing a new cylinder background, remove any previous face images
 		if( backgroundCylinderMaterialArray.length > 0 ) {
 			backgroundCylinderMaterialArray.length = 0;
@@ -327,35 +293,6 @@ function installBackground() {
 		backgroundCylinderMesh = new THREE.Mesh( backgroundCylinderGeometry, backgroundCylinderMaterial );
 		cylinderMeshUvForEndCapImages( backgroundCylinderMesh, 3 );
 		scene.add( backgroundCylinderMesh );
-//add this for images on cylinder endcaps
-
-
-
-
-
-//remove this for images on cylinder endcaps
-		// backgroundCylinderWallGeometry = new THREE.CylinderGeometry( 
-		// 			currentBackground.shape_parameter_1,
-		// 			currentBackground.shape_parameter_1,
-		// 			currentBackground.shape_parameter_2,
-		// 			currentBackground.shape_parameter_3 );
-		// setACylinderBackgroundMaterial( currentBackground.image_filename_1, 'wall' );
-		// backgroundCylinderWallMesh = new THREE.Mesh( backgroundCylinderWallGeometry, backgroundCylinderWallMaterial );
-		// // We want planes to serve as end caps for the cylinder since the UV imaging geometry for cylinder
-		// //  endcaps is quite complicated. We'll place the endcaps just inside the ends of the cylinder.
-		// // The planes must be large enough to cover the ends of the cylinder...
-		// var planeExtent = currentBackground.shape_parameter_1 * 2;
-		// // Make renderable meshes for both endcaps and the cylinder
-		// backgroundCylinderTopGeometry = new THREE.PlaneBufferGeometry( planeExtent, planeExtent );
-		// setACylinderBackgroundMaterial( currentBackground.image_filename_2, 'top' );
-		// backgroundCylinderTopMesh = new THREE.Mesh( backgroundCylinderTopGeometry, backgroundCylinderTopMaterial );
-		// backgroundCylinderBottomGeometry = new THREE.PlaneBufferGeometry( planeExtent, planeExtent );
-		// setACylinderBackgroundMaterial( currentBackground.image_filename_3, 'bottom' );
-		// backgroundCylinderBottomMesh = new THREE.Mesh( backgroundCylinderBottomGeometry, backgroundCylinderBottomMaterial );
-		// scene.add( backgroundCylinderWallMesh);
-		// scene.add( backgroundCylinderTopMesh);
-		// scene.add( backgroundCylinderBottomMesh);
-//remove this for images on cylinder endcaps
 	}
 	// Position the background cube according to the configuration parameters
 	// (this is done by a separate function as it will need to be repeated whenever a new track type is installed)

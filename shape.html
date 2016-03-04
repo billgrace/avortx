@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Make a 3D geometry by extruding a 2D shape</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+<style type="text/css">
+	body {
+		margin: 0px;
+		background-color: #fff;
+		overflow: hidden;
+	}
+</style>
+</head>
+<body>
+<script type="text/javascript" src="script/three.min.js"></script>
+<script type="text/javascript" src="script/OrbitControls.js"></script>
+<script type="text/javascript" src="script/cannon.min.js"></script>
+<script type="text/javascript" src="script/CannonDebugRenderer.js"></script>
+<script type="text/javascript">
+	var scene, camera, renderer, xLight, xMinusLight, yLight, yMinusLight, zLight, zMinusLight, orbitControls;
+	init();
+	function init() {
+		scene = new THREE.Scene();
+		camera = new THREE.PerspectiveCamera( 85, 1.3, 1, 20000 );
+		camera.position.set( 200, 70, 200 );
+		renderer = new THREE.WebGLRenderer();
+		document.body.appendChild( renderer.domElement );
+		xLight = new THREE.DirectionalLight( 0xffffff );
+		xLight.position.set( 1, 0, 0 ).normalize();
+		scene.add( xLight );
+		xMinusLight = new THREE.DirectionalLight( 0xffffff );
+		xMinusLight.position.set( -1, 0, 0 ).normalize();
+		scene.add( xMinusLight );
+		yLight = new THREE.DirectionalLight( 0xffffff );
+		yLight.position.set( 0, 1, 0 ).normalize();
+		scene.add( yLight );
+		yMinusLight = new THREE.DirectionalLight( 0xffffff );
+		yMinusLight.position.set( 0, -1, 0 ).normalize();
+		scene.add( yMinusLight );
+		zLight = new THREE.DirectionalLight( 0xffffff );
+		zLight.position.set( 0, 0, 1 ).normalize();
+		scene.add( zLight );
+		zMinusLight = new THREE.DirectionalLight( 0xffffff );
+		zMinusLight.position.set( 0, 0, -1 ).normalize();
+		scene.add( zMinusLight );
+		orbitControls = new THREE.OrbitControls( camera );
+		orbitControls.damping = 0.2;
+		orbitControls.addEventListener( 'change', render );
+		var visibleAxes = new THREE.AxisHelper( 300 );
+		scene.add( visibleAxes );
+
+		var rectangleLength = 120;
+		var rectangleWidth = 40;
+		var rectangleShape = new THREE.Shape();
+		rectangleShape.moveTo( 0, 0 );
+		rectangleShape.lineTo( 0, rectangleWidth );
+		rectangleShape.lineTo( rectangleLength / 2, rectangleWidth * 1.5 );
+		rectangleShape.lineTo( rectangleLength, rectangleWidth );
+		rectangleShape.lineTo( rectangleLength, 0 );
+		rectangleShape.lineTo( 0, 0 );
+		// var rectangleGeometry = new THREE.ShapeGeometry( rectangleShape );
+		var rectangleGeometry = new THREE.ExtrudeGeometry( rectangleShape, { amount:10, bevelEnabled:false } );
+		var rectangleMesh = new THREE.Mesh( rectangleGeometry, new THREE.MeshBasicMaterial( { color: 0xff0000, side:THREE.DoubleSide } ) );
+		scene.add( rectangleMesh );
+
+		animate();
+	}
+	function render() {
+		renderer.setSize( window.innerWidth, window.innerHeight );
+		camera.updateProjectionMatrix();
+		renderer.render( scene, camera );
+	}
+	function animate() {
+		requestAnimationFrame( animate );
+		render();
+	}
+</script>

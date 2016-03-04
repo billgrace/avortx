@@ -86,69 +86,37 @@ if($user->isLoggedIn()&&$user->hasPermission('admin')) {
 	<script type="text/javascript" src="script/three.min.js"></script>
 	<script type="text/javascript" src="script/OrbitControls.js"></script>
 	<script type="text/javascript" src="script/stats.min.js"></script>
-	<script type="text/javascript" src="script/cannon.min.js"></script>
+	// <script type="text/javascript" src="script/cannon.min.js"></script>
+	<script type="text/javascript" src="script/cannon.js"></script>
 	<script type="text/javascript" src="script/CannonDebugRenderer.js"></script>
 	<script type="text/javascript" src="script/ajax.js"></script>
+	<script type="text/javascript" src="script/animation.js"></script>
 	<script type="text/javascript" src="script/background.js"></script>
 	<script type="text/javascript" src="script/controls.js"></script>
+
+	<script type="text/javascript" src="script/Projector.js"></script>
+	<script type="text/javascript" src="script/CanvasRenderer.js"></script>
+	<script type="text/javascript" src="script/RaytracingRenderer.js"></script>
+	<script type="text/javascript" src="script/SoftwareRenderer.js"></script>
+	<script type="text/javascript" src="script/SVGRenderer.js"></script>
+	<script type="text/javascript" src="script/Detector.js"></script>
+
+	<script type="text/javascript" src="script/physics.js"></script>
+	<script type="text/javascript" src="script/rendering.js"></script>
 	<script type="text/javascript" src="script/robot.js"></script>
 	<script type="text/javascript" src="script/robotController.js"></script>
 	<script type="text/javascript" src="script/shapes.js"></script>
 	<script type="text/javascript" src="script/showVectors.js"></script>
+	<script type="text/javascript" src="script/terrain.js"></script>
 	<script type="text/javascript" src="script/track.js"></script>
+	<script type="text/javascript" src="script/vehicle.js"></script>
 	<script type="text/javascript">
 
 		var kbuf;
 
-		var visibleRobotBodyOrientationVector;
-		var visibleAxes;
-
-		var dragPoints = [], currentDragPoint;
-		var dragPointStandardSpeed = 50;
-		var dragPointSpeedAccumulator = 0;
-		var dragPointLastStepDistance;
-		var dragPointOffset = -3;
-		var dragPointEnabled = true;
-		var globalXAxisAngle = new THREE.Vector3( 1, 0, 0 );
-		var globalYAxisAngle = new THREE.Vector3( 0, 1, 0 );
-		var globalZAxisAngle = new THREE.Vector3( 0, 0, 1 );
-
-		var robotControllerPanel;
-		var speedSlider;
-
-		var animationPaused;
-
-		var frameCount = 0;
-		// var slowMotion = false;
-		var outlineBodies = false;
-
-		var camera, renderer, scene, xLight, yLight, zLight;
-		var orbitControls;
-		var cameraLookingAtVector = new THREE.Vector3(), cameraMoveVector = new THREE.Vector3();
-		var cameraFollowDisplacement = new THREE.Vector3(), cameraRobotDisplacement = new THREE.Vector3();
-		var cameraPositioningMode, cameraTetherLength, cameraForwardViewDistance;
-
-		var world, timeStep = 1/60, caDebugOutliner;
-
-		var groundPlaneMesh, groundPlaneBody, groundPlaneGeometry, groundPlaneShape, groundPlaneMaterial;
-
-		var robotBody, robotMesh;
-
 		var stats;
 
 		init();
-
-		// global variables for displaying lists of available items when it's time to choose
-		var globalListBox = undefined;
-		var needToshowRobotListWhenAvailable = false;
-		var needToshowBackgroundListWhenAvailable = false;
-		var needToshowTrackTypeListWhenAvailable = false;
-		var needToshowTrackLayoutListWhenAvailable = false;
-		function emptyGlobalListBox() {
-			if( globalListBox != undefined ) {
-				globalListBox.remove();
-			}
-		}
 
 		function showMessage( message ) {
 			var messageDisplayElement = document.getElementById( "messageDisplay" );
@@ -520,19 +488,12 @@ if($user->isLoggedIn()&&$user->hasPermission('admin')) {
 		//All users (regular OR admin) - need to choose database items
 
 		function init() {
+			animationStepCallbackList.push('indexAnimationStepCallback');
+			animationRestartCallbackList.push('indexAnimationRestartCallback');
 
 			scene = new THREE.Scene();
 
 			world = new CANNON.World();
-			world.gravity.set( 0, -9.8, 0 );
-			world.broadphase = new CANNON.NaiveBroadphase();
-
-			// Controller panel
-			robotControllerPanel = new robotControllerPanel( "15%", "0px", "20%", "25%" );
-			robotControllerPanel.activate();
-			// Speed slider
-			speedSlider = new verticalSlider( 'image/redCircleSpeedSlider.png', 0.17, 0.78, 0.05, 0.02, 0.2, '#443322', 1, 100, 50 );
-			speedSlider.activate();
 
 			var chooseButtonPanel = document.createElement( "div" );
 			chooseButtonPanel.style.cssText = "position:absolute;right:0px;top:0px;display:block";
@@ -687,63 +648,20 @@ if($user->isLoggedIn()&&$user->hasPermission('admin')) {
 			chooseTlButton.ontouchstart = chooseTlButtonOnClick;
 			document.getElementById("chooseButtonPanel").appendChild( chooseTlButton );
 
-			initializeTrack();
+			initializeAnimation();
 			initializeBackground();
+			initializePhysics();
+			initializeRendering();
+			initializeRobot();
+			initializeTerrain();
+			initializeTrack();
+			initializeVehicle();
 
-			camera = new THREE.PerspectiveCamera( 100, 1.3, 1, 10000 );
-			camera.position.set( 100, 100, 500);
-			renderer = new THREE.WebGLRenderer();
-			renderer.domElement.id = "rendererDomElement";
-			document.body.appendChild( renderer.domElement );
-			xLight = new THREE.DirectionalLight( 0xffffff );
-			xLight.position.set( 1, 0, 0 ).normalize();
-			scene.add( xLight );
-			xMinusLight = new THREE.DirectionalLight( 0xffffff );
-			xMinusLight.position.set( -1, 0, 0 ).normalize();
-			scene.add( xMinusLight );
-			yLight = new THREE.DirectionalLight( 0xffffff );
-			yLight.position.set( 0, 1, 0 ).normalize();
-			scene.add( yLight );
-			yMinusLight = new THREE.DirectionalLight( 0xffffff );
-			yMinusLight.position.set( 0, -1, 0 ).normalize();
-			scene.add( yMinusLight );
-			zLight = new THREE.DirectionalLight( 0xffffff );
-			zLight.position.set( 0, 0, 1 ).normalize();
-			scene.add( zLight );
-			zMinusLight = new THREE.DirectionalLight( 0xffffff );
-			zMinusLight.position.set( 0, 0, -1 ).normalize();
-			scene.add( zMinusLight );
-
-			caDebugOutliner = new THREE.CannonDebugRenderer( scene, world );
-
-			orbitControls = new THREE.OrbitControls( camera );
-			orbitControls.damping = 0.2;
-			orbitControls.maxDistance = ( 10000 );
-			orbitControls.addEventListener( 'change', render );
-
-			initializeRobots();
-			selectCurrentRobot( 2 );
-
-			// visibleAxes = new THREE.AxisHelper( 300 );
-			// scene.add( visibleAxes );
-			// cannonAxes = new CannonAxes( 400 );
-			// cannonAxesVisible = false;
-			// visibleCameraVector = new VisibleVector( camera.getWorldDirection(), camera.position, 500, 1.0, 0.5, 1.0 );
-			// scene.add( visibleCameraVector );
-			// visibleRobotBodyOrientationVector = new VisibleQuaternion( currentRobotMesh, 50 );
-			// scene.add( visibleRobotBodyOrientationVector );
-
-			animationPaused = false;
 			restartAnimation();
 
-
-			camera.position.copy( currentTrackLayoutStartingPoint );
-			camera.position.z += 50;
-
-
 			document.addEventListener( "keydown", checkKeyDown );
-			window.addEventListener( "resize", onWindowResize, false );
-			window.addEventListener( "orientationchange", onWindowResize, false );
+			// window.addEventListener( "resize", onWindowResize, false );
+			// window.addEventListener( "orientationchange", onWindowResize, false );
 
 			stats = new Stats();
 			stats.domElement.style.position = "absolute";
@@ -788,117 +706,13 @@ if($user->isLoggedIn()&&$user->hasPermission('admin')) {
 			}
 		}
 
-		function moveMeshToBody() {
-			currentRobotMesh.position.copy( robotBody.position );
-		}
-
-		function onWindowResize() {
-			var layout = "portrait";
-			if( window.innerWidth > window.innerHeight )
-				layout = "landscape";
-		}
-
-		function restartAnimation() {
-			robotBody.position.copy( currentTrackLayoutStartingPoint );
-			robotBody.position.y += currentTrackType.width / 3;
-			initializeDragPoint();
-		}
-
-		function processPhysics() {
-			updateRobotPosition();
-			switch ( currentRobotMotiveMode ) {
-				case 'dragPointSpring':
-					world.step( timeStep );
-					break;
-				case 'trackDragPoint':
-					break;
-				default:
-					break;
-			}
-			moveMeshToBody();
-		}
-
-		function render() {
-			renderer.setSize( window.innerWidth, window.innerHeight );
-			camera.updateProjectionMatrix();
-			renderer.render( scene, camera );
-		}
-
-		function initializeDragPoint() {
-			currentDragPoint = 0;
-			dragPointLastStepDistance = 0;
-		}
-		function enableDragPoints() {
-			dragPointEnabled = true;
-		}
-		function disableDragPoints() {
-			dragPointEnabled = false;
-		}
-		function nextDragPoint() {
-			// animate the drag point
-			if( !dragPointEnabled ) return;
-			// proceed along the array of drag points on the track according to the current speed setting
-			dragPointSpeed = speedSlider.currentValue;
-			dragPointSpeedAccumulator += dragPointSpeed;
-			dragPointLastStepDistance = 0;
-			var startingDragPointStepPosition = new THREE.Vector3();
-			startingDragPointStepPosition.copy( dragPoints[ currentDragPoint ].location );
-			while( dragPointSpeedAccumulator > dragPointStandardSpeed ) {
-				dragPointSpeedAccumulator -= dragPointStandardSpeed;
-				turnOffDragPoint( currentDragPoint );
-				dragPointLastStepDistance += currentTrackType.small_piece_length;
-				currentDragPoint++;
-				if( currentDragPoint >= dragPoints.length ) { currentDragPoint -= dragPoints.length; }
-				turnOnDragPoint( currentDragPoint );
-			}
-			// if we've moved to a new drag point, adjust the robot as needed
-			if( dragPointLastStepDistance > 0 ) {
-				animateRobotAssembly();
-			}
-		}
-
-		function animate() {
-			requestAnimationFrame( animate );
-
+		function indexAnimationStepCallback() {
+			// pollControls();
 			stats.update();
+		}
 
-			if( needToshowRobotListWhenAvailable ) {
-				// if( !backgroundAjaxExchangePending ) {
-					needToshowRobotListWhenAvailable = false;
-					makeRobotListBox();
-				// }
-			}
-
-			if( needToshowBackgroundListWhenAvailable ) {
-				if( !backgroundAjaxExchangePending ) {
-					needToshowBackgroundListWhenAvailable = false;
-					makeBackgroundListBox();
-				}
-			}
-
-			if( needToshowTrackTypeListWhenAvailable ) {
-				if( !trackTypeAjaxExchangePending ) {
-					needToshowTrackTypeListWhenAvailable = false;
-					makeTrackTypeListBox();
-				}
-			}
-
-			if( needToshowTrackLayoutListWhenAvailable ) {
-				if( !trackLayoutAjaxExchangePending ) {
-					needToshowTrackLayoutListWhenAvailable = false;
-					makeTrackLayoutListBox();
-				}
-			}
-
-			if( animationPaused ) return;
-			frameCount++;
-			nextDragPoint();
-			processPhysics();
-
-			// visibleRobotBodyOrientationVector.update( currentRobotMesh );
-			caDebugOutliner.update();
-
-			render();
+		function indexAnimationRestartCallback() {
+			
 		}
 	</script>
 </body>

@@ -12,6 +12,7 @@ function robotControllerPanel( left, bottom, width, height ) {
 	this.styleWidth = width;
 	this.styleHeight = height;
 	this.visible = document.createElement( 'div' );
+	this.visible.id = 'robotControllerPanel';
 	this.visible.style.cssText = "position:absolute;background-color:gray";
 	document.body.appendChild( this.visible );
 	window.addEventListener( "resize", this.consoleWindowResizeHandler, false );
@@ -25,10 +26,6 @@ function robotControllerPanel( left, bottom, width, height ) {
 
 	this.windowResizeHandler = function() {
 		if( inst.dormant ) return;
-		// inst.visible.style.left = "15%";
-		// inst.visible.style.bottom = "0px";
-		// inst.visible.style.width = "20%";
-		// inst.visible.style.height = "25%";
 		inst.visible.style.left = inst.styleLeft;
 		inst.visible.style.bottom = inst.styleBottom;
 		inst.visible.style.width = inst.styleWidth;
